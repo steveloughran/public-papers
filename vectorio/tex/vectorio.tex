@@ -1,0 +1,230 @@
+Vector IO
+\end{abstract}
+
+% ========================================================================
+
+\section{Introduction}
+\label{sec:introduction}
+
+
+
+\subsubsection{Terminology}
+
+First, some terminology needs to be introduced to describe
+the protocols.
+
+% ========================================================================
+
+\section{The Challenge of Object Stores}
+\label{sec:object-stores}
+
+Having introduced the classic filesystem and the commit protocols and algorithms
+used to commit the output of distributed computation, let us consider
+Object Stores such as Amazon S3, Google Cloud Storage and
+Windows Azure Storage\ \cite{AWS-S3-intro,Calder11}.
+
+% As all filesystem
+%operations are via the NameNode, all clients get a consistent view of the filesystem.
+%And, as the
+
+
+The most salient point, is this: Object Stores are not filesystems.
+Rather than the classic hierarchical view of directories, subdirectories
+and paths, object stores store a set of objects, each with a unique key;
+a sequence of characters provided when the object was created.
+Classic path separators ``\texttt{/}'' are invariably part of the set of valid
+characters, so allowing objects to be created which have the appearance
+of files in a directory.
+
+As examples, the following are all valid keys on the Amazon, Google and Microsoft
+stores
+
+\begin{verbatim}
+/entry
+/path1/path2/path3
+/path1/
+/path1
+\end{verbatim}
+
+More subtly, it is valid for an object store container (on S3:, a ``bucket'')
+to have objects with all of these names simultaneously.
+It is not an error to have an object whose key would make it appear to be
+``under'' another object, nor to explicitly contain path entries separators.
+
+Objects cannot generally be appended to once created, or renamed.
+They can be replaced by new objects or deleted.
+Some form of copy operation permits an object to be duplicated, creating
+a new object with a different key.
+Such copy operations take place within the storage infrastructure with a
+copy time measurable in megabytes/second.
+
+
+The set of operations offered are normally an extended set of HTTP verbs:
+
+\begin{description}[leftmargin=8em, style=nextline]
+  \item[PUT] Atomic write of an object
+  \item[GET] retrieve all or part of an object
+  \item[HEAD] retrieve the object metadata
+  \item[LIST] list all objects starting with a given prefix
+  \item[COPY] copy a single object within the store, possibly from other containers.
+  \item[DELETE] Delete an object
+\end{description}
+
+There are usually two extra operations to address scale:
+ a bulk delete call which may have partial failures,
+and \emph{Multipart Upload}; a way to upload an object larger than the
+5GB which a single HTTP POST can support.
+The exact nature of multipart uploads varies from store to store.
+For Amazon this is initiated as a sequence of POST calls, one to initiate,
+one or more POST calls with data, and a final POST listing the (ordered)
+etags of the uploaded object parts.
+All but the last upload in the object must be 5 MB or larger
+
+
+Object store implementations can display different levels of inconsistency.
+Windows Azure Storage is fully consistent;
+Amazon S3 offers create consistency on new objects, but not updated or deleted ones.
+It also exhibits listing inconsistency, wherein a newly created object
+may not be visible in the results of a \texttt{LIST} call, or a newly deleted
+object still be listed as present.
+
+
+Despite the clear mismatch between the capabilities and APIs of object storage,
+and that expected of a Hadoop filesystem, they have one key thing in common:
+they can store Petabytes of data.
+For that reason, all the popular cloud storage infrastructures have connectors
+from Hadoop, and thus transitively application such as Apache Hive, Apache HBase
+and Apache Spark.
+Many of these are developed within the Apache Software Foundation's own
+source repository, including the Azure ``wasb'' connector and the ``s3a'' connector
+to Amazon S3.
+Others are maintained externally ---particularly Amazon EMR's own ``EMRFS'',
+known by the \texttt{s3} URL schema, and the Google Cloud Storage connector,
+\texttt{gcs}.
+
+Irrespective of where they are implemented, they all share a common objective:
+trying to maintain the filesystem metaphor atop an object store.
+
+As an example of a simple case, the \texttt{getFileStatus()} call mimics
+a directory, in conjunction with zero-byte ``empty directory'' markers,
+so must look for a file, then a marker and the most expensive operation, a path listing.
+
+\begin{verbatim}
+  GET path
+  GET path/
+  LIST path/
+\end{verbatim}
+
+The performance differences of every HTTPS request slows
+down all RPC operations, even with pooled collections: even this simple probe
+can for a file take hundreds of milliseconds.
+Other mimicked operations have similar costs.
+
+Operations upon directories are mimicked by listing all objects under that path,
+and acting upon those objects individually.
+A recursive delete is implemented as a listing of the maximum number of files
+returned in one HTTP request (5000 or a similar value), then either issuing
+bulk DELETE operations, where supported, or falling back to individual DELETE
+calls.
+Bulk LIST/DELETE operations have a cost of one HTTP request/page size, such
+as $O(1 + descendants/5000)$; if sequential delete operations must be issued, then
+the cost is at least $O(1+ descendants)$, with the ``at least'' qualifier being
+added because request throttling can slow down the requests even further.
+
+File and directory renaming is even more expensive.
+A file rename is implemented as a copy of the original data to a new path,
+followed by a delete of the original data.
+This makes the time to copy a single file an $O(length(file))$ operation
+\footnote{Third party implementations of the S3 protocol do generally offer an $O(1)$ rename operation}.
+
+Directory rename is a paged listing of all children, and a copy and delete for
+each, which makes its duration a function the number of files and total amount of data.
+
+These are the tangible performance issues, the ones which are most visible
+to users.
+However it is the fact that the atomicity behaviors of a POSIX filesystem
+are not provided which are most dangerous.
+
+The \texttt{rename()} call is no longer atomic: two clients may start renaming
+into to the same destination directory.
+Furthermore, if any rename fails, the state of the source and destination
+directory is unknown: the data may be spread across both locations.
+Finally, because the files to be copied is determined from a LIST call,
+if the object store is not consistent, the listing can be incomplete or out of
+date.
+Newly created files may not be visible, so not copied as part of the rename
+operation.
+
+\emph{Directory rename cannot be used in a commit algorithm which
+requires atomic, exclusive or consistent renames}.
+
+The \texttt{create(path, overwrite=false)} operation is also flawed.
+This is expected to be an atomic operation to immediately create a file iff there is
+no entry at that path;
+Instead may be mimicked by a sequence of the \texttt{getFileStatus()} call
+and the creation of a buffer on the client side for the output: the data
+will not be visible until the data is completely written and the stream
+closed.
+As a result, it is impossible to use file creation as a means of creating any
+form of lock or exclusive access in such a store.
+
+
+Returning to the MapReduce v1 and v2 commit algorithms, they are unsuitable for
+use in any object store without atomic renames (v1), consistent
+directory listings and existence checks (v1 and v2).
+
+As a result, neither can be used directly against Amazon S3 today.
+With a consistent metadata layer such as S3mper or S3Guard, the v2 algorithm
+can be used, though its task commit time will be $O(data)$\ \cite{S3mper,HADOOP-13345}.
+
+Providing a safe, performant output committer for object stores forces
+us to leave the metaphor of a filesystem behind, and embrace
+the capabilities of object stores themselves.
+
+=============================
+\section{Integration with Hadoop and Spark}
+\label{sec:integration}
+
+
+
+% ========================================================================
+
+\section{Results}
+\label{sec:results}
+
+
+% ========================================================================
+
+\section{Limitations}
+\label{sec:limitations}
+
+% ========================================================================
+
+\section{Related Work}
+\label{sec:related-work}
+
+\section{Conclusions and Further Work}
+\label{sec:conclusions}
+
+
+
+
+
+% ========================================================================
+
+\section*{Acknowledgements}
+\label{sec:acknowledgements}
+
+
+% ========================================================================
+
+\section{References}
+\label{sec:references}
+
+% Bibliography. Include
+
+\bibliographystyle{IEEEtran}
+\bibliography{bibliography}
+
+
+\end{document}
