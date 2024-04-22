@@ -1,4 +1,73 @@
-Vector IO
+\documentclass[conference]{IEEEtran}
+
+% BUILDING. Do not use ``latex''
+% USE
+%   brew install mactex
+%   pdflatex -shell-escape tex/vectorio.tex
+
+%\usepackage{babel}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{cite}
+%\usepackage{algorithmic}
+%\usepackage{algorithmicx}
+\usepackage[ruled,vlined,boxed]{algorithm2e}
+\usepackage{listings}
+%\usepackage{minted}
+\usepackage{underscore}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{checkend}
+\usepackage{enumitem}
+
+
+\title{
+    Hadoop Vector IO:\\
+    Scatter/Gather IO for columnar data formats}
+
+% Yes, this titling is broken
+\author{
+  Loughran, Steve
+  \texttt{stevel@apache.org}\\
+\and
+  Thakur, Mukund
+  \texttt{mthakur@apache.org}\\
+\and
+  O'Malley, Owen
+  \texttt{TODO@apache.org}
+}
+\date{May 2021}
+
+% ========================================================================
+
+\begin{document}
+
+
+\maketitle
+
+% ========================================================================
+
+\begin{abstract}
+The Hadoop Filesystem API has been extended to support scatter/gather IO
+for columnar data formats.
+This paper describes the design and implementation of this feature,
+and the integration with Apache ORC and Parquet, and
+presents results from TPC-DS benchmarks.
+
+Or key findings are that
+\begin{itemize}
+  \item An asynchronous scatter/gather IO API is ideally suited to retrieval
+  of ``stripes''/``row groups'' of data stored in columnar data formats.
+  \item Java's native IO APIs support such an API, offering speedups when reading
+  local data.
+  \item Against cloud storage, the ability to issue parallel GET requests
+        significantly improves read performance, providing tangible performance
+        improvements to queries which read large quantities of data.
+  \item Adding support for
+  \item The AWS SDK V2 is the fastest way to read data from S3
+  \item The AWS SDK V2 is not always the most reliable way to read data from S3
+\end{itemize}
+
 \end{abstract}
 
 % ========================================================================
@@ -70,121 +139,48 @@ The set of operations offered are normally an extended set of HTTP verbs:
   \item[DELETE] Delete an object
 \end{description}
 
-There are usually two extra operations to address scale:
- a bulk delete call which may have partial failures,
-and \emph{Multipart Upload}; a way to upload an object larger than the
-5GB which a single HTTP POST can support.
-The exact nature of multipart uploads varies from store to store.
-For Amazon this is initiated as a sequence of POST calls, one to initiate,
-one or more POST calls with data, and a final POST listing the (ordered)
-etags of the uploaded object parts.
-All but the last upload in the object must be 5 MB or larger
+% ========================================================================
 
+\section{Design}
+\label{sec:design}
 
-Object store implementations can display different levels of inconsistency.
-Windows Azure Storage is fully consistent;
-Amazon S3 offers create consistency on new objects, but not updated or deleted ones.
-It also exhibits listing inconsistency, wherein a newly created object
-may not be visible in the results of a \texttt{LIST} call, or a newly deleted
-object still be listed as present.
+The design of the vector IO API had some core requirements:
+\begin{itemize}
+  \item Support scatter/gather IO through local filesystem through the java NIO API.
+  \item Local reads to support with CRC validation of data read.
+  \item Efficient support against cloud stores where parallel GET requests are required.
+  \item Support scatter/gather IO through HDFS and other distributed filesystems
+        where the POSIX API and Hadoop PositionedReadable interface are available
+  \item Optimize for reading columnar data formats such as ORC and Parquet
+  \item Be easy to integrate with the ORC and Parquet libraries, in the open
+        source releases, as well as our own internal branches.
+  \item Permit out-of-order result processing, even while the current format libraries
+        do not yet support this.
+\end{itemize}
 
+What is key is: it \emph{must} be possible to use the vector IO API against
+any existing Hadoop input stream, with the base implementation
+falling back to the existing \texttt{PositionedReadable} readFully() method,
+with the option of custom higher performance implementations --- including
+for the local filesystem as well as cloud storage.
 
-Despite the clear mismatch between the capabilities and APIs of object storage,
-and that expected of a Hadoop filesystem, they have one key thing in common:
-they can store Petabytes of data.
-For that reason, all the popular cloud storage infrastructures have connectors
-from Hadoop, and thus transitively application such as Apache Hive, Apache HBase
-and Apache Spark.
-Many of these are developed within the Apache Software Foundation's own
-source repository, including the Azure ``wasb'' connector and the ``s3a'' connector
-to Amazon S3.
-Others are maintained externally ---particularly Amazon EMR's own ``EMRFS'',
-known by the \texttt{s3} URL schema, and the Google Cloud Storage connector,
-\texttt{gcs}.
+Java NIO API:
 
-Irrespective of where they are implemented, they all share a common objective:
-trying to maintain the filesystem metaphor atop an object store.
+extending PositionedReadable with range coalescing
 
-As an example of a simple case, the \texttt{getFileStatus()} call mimics
-a directory, in conjunction with zero-byte ``empty directory'' markers,
-so must look for a file, then a marker and the most expensive operation, a path listing.
+Async API with back-references for wiring up.
 
-\begin{verbatim}
-  GET path
-  GET path/
-  LIST path/
-\end{verbatim}
+S3A Impl as ranged GET requests with (limited) parallelism.
 
-The performance differences of every HTTPS request slows
-down all RPC operations, even with pooled collections: even this simple probe
-can for a file take hundreds of milliseconds.
-Other mimicked operations have similar costs.
+% ========================================================================
 
-Operations upon directories are mimicked by listing all objects under that path,
-and acting upon those objects individually.
-A recursive delete is implemented as a listing of the maximum number of files
-returned in one HTTP request (5000 or a similar value), then either issuing
-bulk DELETE operations, where supported, or falling back to individual DELETE
-calls.
-Bulk LIST/DELETE operations have a cost of one HTTP request/page size, such
-as $O(1 + descendants/5000)$; if sequential delete operations must be issued, then
-the cost is at least $O(1+ descendants)$, with the ``at least'' qualifier being
-added because request throttling can slow down the requests even further.
-
-File and directory renaming is even more expensive.
-A file rename is implemented as a copy of the original data to a new path,
-followed by a delete of the original data.
-This makes the time to copy a single file an $O(length(file))$ operation
-\footnote{Third party implementations of the S3 protocol do generally offer an $O(1)$ rename operation}.
-
-Directory rename is a paged listing of all children, and a copy and delete for
-each, which makes its duration a function the number of files and total amount of data.
-
-These are the tangible performance issues, the ones which are most visible
-to users.
-However it is the fact that the atomicity behaviors of a POSIX filesystem
-are not provided which are most dangerous.
-
-The \texttt{rename()} call is no longer atomic: two clients may start renaming
-into to the same destination directory.
-Furthermore, if any rename fails, the state of the source and destination
-directory is unknown: the data may be spread across both locations.
-Finally, because the files to be copied is determined from a LIST call,
-if the object store is not consistent, the listing can be incomplete or out of
-date.
-Newly created files may not be visible, so not copied as part of the rename
-operation.
-
-\emph{Directory rename cannot be used in a commit algorithm which
-requires atomic, exclusive or consistent renames}.
-
-The \texttt{create(path, overwrite=false)} operation is also flawed.
-This is expected to be an atomic operation to immediately create a file iff there is
-no entry at that path;
-Instead may be mimicked by a sequence of the \texttt{getFileStatus()} call
-and the creation of a buffer on the client side for the output: the data
-will not be visible until the data is completely written and the stream
-closed.
-As a result, it is impossible to use file creation as a means of creating any
-form of lock or exclusive access in such a store.
-
-
-Returning to the MapReduce v1 and v2 commit algorithms, they are unsuitable for
-use in any object store without atomic renames (v1), consistent
-directory listings and existence checks (v1 and v2).
-
-As a result, neither can be used directly against Amazon S3 today.
-With a consistent metadata layer such as S3mper or S3Guard, the v2 algorithm
-can be used, though its task commit time will be $O(data)$\ \cite{S3mper,HADOOP-13345}.
-
-Providing a safe, performant output committer for object stores forces
-us to leave the metaphor of a filesystem behind, and embrace
-the capabilities of object stores themselves.
-
-=============================
-\section{Integration with Hadoop and Spark}
+\section{Integration with ORC and Parquet}
 \label{sec:integration}
 
+It was our belief that integration with the ORC and Parquet libraries was
+sufficient to deliver tangible speedups
+\subsection{ORC}
+\subsection{Parquet}
 
 
 % ========================================================================
@@ -192,6 +188,74 @@ the capabilities of object stores themselves.
 \section{Results}
 \label{sec:results}
 
+\subsection{External tests}
+
+\begin{quotation}
+ Some numbers from an independent benchmark.
+ I used Spark to parallelize the reading of all rowgroups (just the reading of the raw data)
+ from TPC-DS/SF10000/store_sales using various APIs.
+
+I used a modified (lots of stuff removed) version of the ParquetFileReader and a custom
+benchmark program that reads all the row groups in parallel and records the time spent in each read from S3.
+The modified version of ParquetFileReader can switch between the various methods of reading from S3.
+The entry AWS SDK V2 is a near copy of the Iceberg S3FileIO code though.
+
+\end{quotation}
+
+\begin{verbatim}
+32 executors, 16 cores
+fs.s3a.threads.max = 20
+\end{verbatim}
+
+\begin{table}
+  \begin{tabular}{ l l l l }
+    \hline
+    \textbf{Reader} & \textbf{Mean Time/min)} & \textbf{Median} & \textbf{Baseline}\\
+    Parquet	& 10.32	& 10 & 1 \\
+    Parquet Vector IO	& 2.02 & 2	& 5.1 \\
+    SDK V2 & 9.86 & 10 & 1 \\
+    SDK V2 Async & 9.66	& 9.6 & 1.1 \\
+    SDK V2 AsyncCrt	& 9.76 & 10 & 1.1 \\
+    SDK V2 S3TransferManager & 9.58 & 9.5 & 1.1 \\
+    SDK V2 Async CRT Http Client & 10.8 & 11 & 1 \\
+    \hline
+  \end{tabular}
+\caption{Independent benchmark results}
+\label{tab:independent-benchmark-results}
+\end{table}
+
+\begin{quotation}
+
+I saw issues with the CRT client when running at scale causing JVM crashes.
+And the V2 transfer manager did not do range reads properly.
+
+Summary - The various V2 SDK clients provide lower latency and better upload speeds but for raw data scans,
+they are all pretty much the same.
+Increasing the parallelism as vector IO does, has maximum benefit.
+\end{quotation}
+
+Analysis.
+
+This benchmark was done with a Hadoop 3.3.x release which had not yet moved to
+the AWS SDK V2; this is why the baseline 10:32 time is slower than the "AWS SDK V2"
+timing.
+Now that Hadoop 3.4.x has moved to the AWS SDK V2, we would expect the v2 timings to
+be the default, so the speedups from other methods would not be quite so pronounced.
+
+The AWS V2 SDK includes an "asynchronous client" which is only used by the S3A
+connector when copying or uploading files, not when reading them.
+The S3TransferManager is the class used to manage these operations.
+The "CRT http client" is a native C library to which the SDK can delegate much
+of the work of building, signing, sending and receiving HTTP requests, and processing
+the responses.
+
+Although the CRT promises speedups, our experience with using openssl instead of
+the Java JRE's open TLS implementation makes us wary of the potential for
+unusual failure conditions which may occur in some deployments.
+
+For the open source hadoop releases, moving to the "Async" client is something
+which could be done with lower risk; switching to CRT library would then be
+an optional which could be explicitly enabled in deployments.
 
 % ========================================================================
 
@@ -206,6 +270,38 @@ the capabilities of object stores themselves.
 \section{Conclusions and Further Work}
 \label{sec:conclusions}
 
+\subsubsection{Multi-ranged GET requests}.
+
+The HTTP protocol allows for a client to request multiple ranges of a file
+in the same request.
+If supported by cloud object stores, this will allow for a single request
+over a single HTTP connection to retrieve different row groups in the same
+request, \emph{irrespecive of their location in the file}.
+This would assist coalescing range requests, reduce the number of HTTP requests
+needed while avoiding the need to discard data between ranges.
+
+\subsubsection{Footer prefetching and cacheing}
+
+As shown in \cite{zeng2023empirical}, and in our own analyisis of trace data
+obtained from audit logs of storage systems, reading the footer date of ORC and Parquet
+files can be a significant cost.
+
+When these files are first opened, the initial read sequence is
+
+\begin{itemize}
+  \item{open the file}
+  \item{read the final 8 bytes to validate filetype and the offset for the "real" footer}
+  \item{read the full footer}
+\end{itemize}
+
+On HDFS the costs of this are
+\begin{itemize}
+  \item{namenode: open the file}
+  \item{read the final 8 bytes to validate filetype and the offset for the "real" footer}
+  \item{read the full footer}
+\end{itemize}
+
+
 
 
 
@@ -215,16 +311,45 @@ the capabilities of object stores themselves.
 \section*{Acknowledgements}
 \label{sec:acknowledgements}
 
+We are grateful for the contributions of all reviewers and testers of this work,
+especially our fellow developers in the open source community,
+especially Dongjoon Hyun, Parth Chandra, and Gang Wu.
+Special mention must be made of the Cloudera QE team whose scale testing
+not only produced the numbers in this paper, but also identified a large number
+of regressions related unrelated changes in the S3A codebase (move to AWS v2 SDK).
+As much of that work was contributed by Mukund and Steve, we are grateful.
+
 
 % ========================================================================
 
 \section{References}
 \label{sec:references}
 
+
+\appendix{Appendix: production issues}
+
+We like to introspect and review what problems actually occurred
+in production.
+This helps us review our assumptions, consider how valid they proved
+to be, and to let us analyze how they got through our reviews and testing.
+
+
+\subsubsection{HADOOP-19101 Vectored Read into off-heap buffer broken in fallback implementation}
+\label{s:HADOOP-19101}
+
+Default implementation reads into Direct (off JVM-heap buffer reads broken.
+This surfaced when adding tests for azure storage.
+Our previous tests against the local and S3 stores used custom implementations
+which were correct. Lesson: always test those defaults.
+This has never been seen ``in the wild'' because the applications
+using the library do not seem to be reading into Direct buffers.
+As well as fixing the bug, the integration patch for Parquet reports all
+attempt to use vectored IO with Direct buffers as ``unsupported''.
+This ensures that even when using old releases, the bug will not surface.
+
 % Bibliography. Include
 
 \bibliographystyle{IEEEtran}
 \bibliography{bibliography}
-
 
 \end{document}

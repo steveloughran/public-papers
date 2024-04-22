@@ -24,15 +24,7 @@
   <name>vector io</name>
   <packaging>jar</packaging>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>maven-latex-plugin-repo</id>
-      <url>http://akquinet.github.com/maven-latex-plugin/maven2/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
+
 
   <dependencies>
     <dependency>
@@ -45,26 +37,13 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>de.akquinet.maven</groupId>
-        <artifactId>maven-latex-plugin</artifactId>
-        <version>1.1</version>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <phase>compile</phase>
-            <configuration>
-              <settings>
-                <texDirectory>tex</texDirectory>
-                <outputDirectory>pdf</outputDirectory>
-                <!-- the bibtex command -->
-                <bibtexCommand>bibtex</bibtexCommand>
-              </settings>
-            </configuration>
-            <goals>
-              <goal>latex</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>io.mathan.maven</groupId>
+        <artifactId>mathan-latex-maven-plugin</artifactId>
+        <version>1.0.4</version>
+        <extensions>true</extensions>
+        <configuration>
+          <sourceDirectory>tex</sourceDirectory>
+        </configuration>
       </plugin>
     </plugins>
   </build>
