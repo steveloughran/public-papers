@@ -1,9 +1,15 @@
-\documentclass[conference]{IEEEtran}
+% acm doc
+% https://authors.acm.org/proceedings/production-information/preparing-your-article-with-latex
+
+\documentclass[manuscript]{acmart}
 
 % BUILDING. Do not use ``latex''
 % USE
 %   brew install mactex
-%   pdflatex -shell-escape tex/vectorio.tex
+%   cd tex
+%   pdflatex -shell-escape vectorio.tex
+%   bibtex vectorio
+%   ...rerun pdflatex, maybe twice
 
 %\usepackage{babel}
 \usepackage{graphicx}
@@ -21,29 +27,25 @@
 \usepackage{enumitem}
 
 
-\title{
-    Hadoop Vector IO:\\
-    Scatter/Gather IO for columnar data formats}
+% must come before begin{document}
+\citestyle{acmauthoryear}
+\setcopyright{none}
+
+\title[Hadoop Vector IO]{Hadoop Vector IO: cloud IO for columnar data formats}
 
 % Yes, this titling is broken
-\author{
-  Loughran, Steve
-  \texttt{stevel@apache.org}\\
-\and
-  Thakur, Mukund
-  \texttt{mthakur@apache.org}\\
-\and
-  O'Malley, Owen
-  \texttt{TODO@apache.org}
-}
-\date{May 2021}
+\author{Steve Loughran}
+\author{Mukund Thakur}
+%  \texttt{mthakur@apache.org}
+\author{Owen O'Malley}
+%  \texttt{owen@apache.org}
+
+\renewcommand{\shortauthors}{Loughran, et al.}
+\date{May 2024}
 
 % ========================================================================
 
 \begin{document}
-
-
-\maketitle
 
 % ========================================================================
 
@@ -63,12 +65,19 @@ Or key findings are that
   \item Against cloud storage, the ability to issue parallel GET requests
         significantly improves read performance, providing tangible performance
         improvements to queries which read large quantities of data.
-  \item Adding support for
-  \item The AWS SDK V2 is the fastest way to read data from S3
-  \item The AWS SDK V2 is not always the most reliable way to read data from S3
+  \item Using the API in the ORC and Parquet is sufficient to enable
+        speedups in applications using the libraries \emph{without} any
+        changes in the application code.
+  \item The API shows that "cloud first" APIs provide tangible speedups
+        against the classic Posix API. Many more opportunities exist to
+        provide and exploit such APIs.
 \end{itemize}
 
 \end{abstract}
+
+
+
+\maketitle
 
 % ========================================================================
 
@@ -90,7 +99,7 @@ the protocols.
 Having introduced the classic filesystem and the commit protocols and algorithms
 used to commit the output of distributed computation, let us consider
 Object Stores such as Amazon S3, Google Cloud Storage and
-Windows Azure Storage\ \cite{AWS-S3-intro,Calder11}.
+Windows Azure Storage.
 
 % As all filesystem
 %operations are via the NameNode, all clients get a consistent view of the filesystem.
@@ -308,9 +317,7 @@ On HDFS the costs of this are
 
 % ========================================================================
 
-\section*{Acknowledgements}
-\label{sec:acknowledgements}
-
+\begin{acks}
 We are grateful for the contributions of all reviewers and testers of this work,
 especially our fellow developers in the open source community,
 especially Dongjoon Hyun, Parth Chandra, and Gang Wu.
@@ -318,6 +325,7 @@ Special mention must be made of the Cloudera QE team whose scale testing
 not only produced the numbers in this paper, but also identified a large number
 of regressions related unrelated changes in the S3A codebase (move to AWS v2 SDK).
 As much of that work was contributed by Mukund and Steve, we are grateful.
+\end{acks}
 
 
 % ========================================================================
@@ -325,17 +333,25 @@ As much of that work was contributed by Mukund and Steve, we are grateful.
 \section{References}
 \label{sec:references}
 
+% Bibliography. Include
 
-\appendix{Appendix: production issues}
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibliography}
 
+
+
+\appendix{}
+
+\section{Appendix}
 We like to introspect and review what problems actually occurred
 in production.
 This helps us review our assumptions, consider how valid they proved
 to be, and to let us analyze how they got through our reviews and testing.
+Hopefully others can learn from our mistakes.
 
 
-\subsubsection{HADOOP-19101 Vectored Read into off-heap buffer broken in fallback implementation}
-\label{s:HADOOP-19101}
+\subsection{HADOOP-19101. Vectored Read into off-heap buffer broken in fallback implementation}
+\label{HADOOP-19101}
 
 Default implementation reads into Direct (off JVM-heap buffer reads broken.
 This surfaced when adding tests for azure storage.
@@ -346,10 +362,5 @@ using the library do not seem to be reading into Direct buffers.
 As well as fixing the bug, the integration patch for Parquet reports all
 attempt to use vectored IO with Direct buffers as ``unsupported''.
 This ensures that even when using old releases, the bug will not surface.
-
-% Bibliography. Include
-
-\bibliographystyle{IEEEtran}
-\bibliography{bibliography}
 
 \end{document}
