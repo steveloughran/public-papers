@@ -181,6 +181,36 @@ Async API with back-references for wiring up.
 
 S3A Impl as ranged GET requests with (limited) parallelism.
 
+\section {Implementation}
+\label{sec:implementation}
+
+\subsection{Default implementation}
+
+\begin{quotation}
+The default implementation of the vector IO API uses blocking readFully() calls
+for each range. This has the same performance as the existing read() API.
+\end{quotation}
+
+\subsection{Local/Checksum filesystem implementation}
+\begin{quotation}
+
+The local filesystem implementation uses the Java NIO API to read the data
+into on-heap buffers in parallel.
+\end{quotation}
+
+\subsection{S3A}
+\begin {quotation}
+
+S3A implementation of vectored IO coalesces the nearby ranges into a multiple
+combined ranges and issues parallel GET requests to AWS S3. Diagram below shows
+the full workflow.
+
+\end{quotation}
+\begin{figure}
+  \includegraphics[width=\linewidth]{vectored_io_s3a_flow.png}
+  \caption{S3A Vector IO}
+  \label{fig:s3a-vector-io}
+\end{figure}
 % ========================================================================
 
 \section{Integration with ORC and Parquet}
