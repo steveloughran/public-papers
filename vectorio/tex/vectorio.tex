@@ -14,7 +14,7 @@
 %\usepackage{babel}
 \usepackage{graphicx}
 \usepackage{color}
-\usepackage{cite}
+%\usepackage{cite}
 %\usepackage{algorithmic}
 %\usepackage{algorithmicx}
 \usepackage[ruled,vlined,boxed]{algorithm2e}
@@ -34,13 +34,14 @@
 \title[Hadoop Vector IO]{Hadoop Vector IO: cloud IO for columnar data formats}
 
 % Yes, this titling is broken
-\author{Steve Loughran}
 \author{Mukund Thakur}
 %  \texttt{mthakur@apache.org}
+\author{Steve Loughran}
 \author{Owen O'Malley}
 %  \texttt{owen@apache.org}
+\author{Rajesh Balamohan}
 
-\renewcommand{\shortauthors}{Loughran, et al.}
+\renewcommand{\shortauthors}{Thakur, et al.}
 \date{May 2024}
 
 % ========================================================================
@@ -86,7 +87,7 @@ Or key findings are that
 
 
 
-\subsubsection{Terminology}
+\subsection{Terminology}\label{subsec:terminology}
 
 First, some terminology needs to be introduced to describe
 the protocols.
@@ -148,6 +149,149 @@ The set of operations offered are normally an extended set of HTTP verbs:
   \item[DELETE] Delete an object
 \end{description}
 
+The java bigdata ecosystem has been built around the Hadoop Filesystem API,
+which is a sub-POSIX API for reading and writing files.
+Unlike POSIX, it is not possible to write anywhere but the end of a file,
+and appending an existing file may not be supported.
+
+For reading files, as well as the traditional read() and seek() operations,
+the Hadoop API has a PositionedReadable interface, which allows for
+
+\begin{verbatim}
+public interface PositionedReadable {
+  int read(long position, byte[] buffer, int offset, int length);
+  void readFully(long position, byte[] buffer, int offset, int length);
+  void readFully(long position, byte[] buffer) throws IOException;
+}
+\end{verbatim}
+
+The \texttt{readFully()} operations are important in that they
+request an exact number of bytes from a specific position and offset,
+raising a java exception if the range is beyond the end of the file.
+
+In cloud stores, these operations can be optimized as the exact range is known;
+if data is read in blocks, all required blocks can be requested as
+a single GET request, or multiple requests in parallel.
+
+Alternatively, the store may simply issue a single GET request for the data.
+
+This \texttt{PositionedReadable} interface is the primary interface
+used by file formats such as ORC and Parquet to read data, as it matches
+their use: read specific ranges of a file into on-heap memory.
+
+For this reason, effort has been invested it in optimizing the
+cloud store implementations.
+However, all these suffer from latency: the offset is not known until
+the call is made, and as the applications read columns at non-seqential
+locations in the files, prefetching is of little or no benefit.
+
+
+\section{Strategies for improving performance}
+\subsection{Prefetching}
+
+The Azure ABFS connector has a small pool of prefetching threads
+which will fetch blocks from open input streams ahead of
+their current read position.
+
+We have some empirical evidence that prefetched blocks are not used
+in columnar data based on an ABFS prefetching bug\ \cite{HADOOP-18521}.
+Prefetched blocks could be corrupted -yet this was never observed when
+processing Parquet/ORC data, implying that these blocks were not read.
+It was discovered reading CSV of many gigabytes in size, and
+in testing could be replicated reading CSV, JSON and Avro files,
+all of which are row-based formats reading large parts of the file
+sequentially.
+
+PInterest, however, did observe tangible speedups in their Parquet workloads
+through their prefetching input stream\ \cite{Bhalchandra:01}.
+
+\begin{quotation}
+ A standalone benchmark showed a 12x improvement in S3 read throughput
+ (from 21 MB/s to 269 MB/s).
+ Increased throughput allowed our production jobs to finish sooner.
+ As a result, we saw 22\% reduction in vcore-hours, 23\% reduction in memory-hours,
+ and similar reduction in run time of a typical production job.
+\end{quotation}
+
+Examining the results in more detail, its clear that block prefetching
+itself was not the cause of the speedup, \emph{it was caching of fetched
+and prefetched blocks}.
+
+\begin{quotation}
+Parquet files require non-sequential access as dictated by their on-disk format.
+Our initial implementation did not use a local cache.
+Each time there was a seek outside of the current block, we had to discard any prefetched data.
+That resulted in worse performance compared to the stock reader when it came to reading from Parquet files.
+
+We observed significant improvement in the read throughput for Parquet files once we
+introduced the local caching of prefetched data.
+Currently, our implementation increases Parquet file reading throughput by 5x compared to the stock
+reader.
+\end{quotation}
+
+This code has now been the Hadoop S3A connector\ \cite{HADOOP-18028},
+work which was done in parallel with the work described in this paper.
+They have not yet been fully merged -though our goal is switch to the
+PInterest stream once this is done, we have confidence in the code
+and selected a fetch/cache strategy for our own work which is suitable
+for most workloads.
+
+\subsection{Footer Caching}
+
+Parquet and ORC files have variable length footers the end of the file which contain
+information about the file.
+
+\begin{verbatim}
+
+    4-byte magic number "PAR1" or "PARE"
+    <Column 1 Chunk 1 + Column Metadata>
+    <Column 2 Chunk 1 + Column Metadata>
+    ...
+    <Column N Chunk 1 + Column Metadata>
+    <Column 1 Chunk 2 + Column Metadata>
+    <Column 2 Chunk 2 + Column Metadata>
+    ...
+    <Column N Chunk 2 + Column Metadata>
+    ...
+    <Column 1 Chunk M + Column Metadata>
+    <Column 2 Chunk M + Column Metadata>
+    ...
+    <Column N Chunk M + Column Metadata>
+    File Metadata
+    4-byte length in bytes of file metadata (little endian)
+    4-byte magic number "PAR1" or "PARE"
+\end{verbatim}
+
+For Parquet, the metadata is summarized in \ref{sec:parquet-metadata}.
+The mey part of the metadata includes not just the schema of
+the columns, but the details about where each column's data is stored
+in the file.
+
+As it this footer is of variable length, unless the location is already known
+to the application/worker process, the first steps of opening a file
+is the sequence of
+
+\begin{enumerate}
+  \item{open the file (HEAD request, unless file length is declared)}
+  \item{read the final 8 bytes to validate filetype and the offset for the "real" footer: GET request}
+  \item{read the full footer: GET request unless locally cached}
+\end{enumerate}
+
+The operation 3 in this sequence is interpeted in the S3A connector as a sign
+that the application will be performing random IO in file and rather than do full-length GET requests,
+it should switch to ranged GET requests, where the range is determine from the read operations.
+
+The google GCS connector has long supported caching of file footers.
+We do not have any data on the speedups this provides.
+
+The ABFS connector added` this feature in 2024;
+\ \cite{HADOOP-18971}; it is not yet in a public release and
+again we do not have any statistics on the speedups it provides.
+
+
+\subsection{Parallel fetching of column stripes}
+
+
 % ========================================================================
 
 \section{Design}
@@ -188,8 +332,9 @@ S3A Impl as ranged GET requests with (limited) parallelism.
 
 It was our belief that integration with the ORC and Parquet libraries was
 sufficient to deliver tangible speedups
-\subsection{ORC}
-\subsection{Parquet}
+\subsection{ORC}\label{subsec:orc}
+
+\subsection{Parquet}\label{subsec:parquet}
 
 
 % ========================================================================
@@ -197,7 +342,7 @@ sufficient to deliver tangible speedups
 \section{Results}
 \label{sec:results}
 
-\subsection{External tests}
+\subsection{External tests}\label{subsec:external-tests}
 
 \begin{quotation}
  Some numbers from an independent benchmark.
@@ -271,15 +416,90 @@ an optional which could be explicitly enabled in deployments.
 \section{Limitations}
 \label{sec:limitations}
 
+
 % ========================================================================
+\section{Other performance enhancements}
+\label{sec:enhancements}
 
-\section{Related Work}
-\label{sec:related-work}
+\subsection{Footer prefetching and caching}\label{subsec:footer-prefetching-and-caching}
 
-\section{Conclusions and Further Work}
-\label{sec:conclusions}
+As shown in\ \cite{zeng2023empirical} and in our own analyisis of trace data
+obtained from audit logs of storage systems, reading the footer date of ORC and Parquet
+files can be a significant cost.
 
-\subsubsection{Multi-ranged GET requests}.
+When these files are first opened, the initial read sequence is
+
+\begin{itemize}
+  \item{seek(EOF-8)}
+  \item{read the final 8 bytes to validate filetype and the length for the "real" footer}
+  \item{seek(EOF-offset)}
+  \item{read (offset..EOF-8)}
+\end{itemize}
+
+\subsubsection{Footer caching in filesystem client}
+
+The GCS and ABFS connectors can both be configured to cache footers.
+
+For this they need to expect to be reading parquet or ORC files, and be configured
+with a footer cache size.
+
+Once this is done, it is transparent to the application that the data has been fetched.
+
+If the cache is large enough, this saves a GET request; if too small then
+a second must be issued -which will no more expensive than the original uncached
+implementation.
+
+However, if this caching is enabled for all files, then there is a cost
+of a superflous GET request for files which are not Parquet or ORC files.
+This is a literal cost, and can reduce the IO capacity of the storage system.
+
+\subsubsection{Coalescing footer reads in the ORC/Parquet libraries}
+If an "expected footer size" is known, the two reads can be coalesced into a single read
+
+\begin{itemize}
+  \item{seek(EOF-expected)}
+  \item{block = read[](expected..EOF)}
+  \item{scan block[len-8..len] bytes to validate filetype and the offset for the "real" footer}
+  \item{process block[len - offset..len-8)}
+\end{itemize}
+
+If the block read is greater than the expected footer size, then the single read
+is sufficient, saving one network round trip, and only reading the extra bytes of
+\texttt{block.len-(footer + 8)}.
+
+If not enough bytes were read, then extra data can be requested, but it is a more complex
+operation to combine the two reads.
+
+This pulls the prefetching logic into the library.
+The benefit is: the library knows its own format, and all stores will gain from the feature.
+The cost is that the library now has a slightly more complex read operation,
+including tests for all conditions, especially the case where the footer is larger
+than the expected data.
+
+\subsubsection{Schema propagation across processes}
+
+Apache Tez passes the schema of the columns being read from the driver to
+the executors (todo: check this).
+This avoids the need to parse it again.
+
+If the footer size of each file was already known (how?), then it could be
+attached too.
+
+
+\subsubsection{File length and offset retentin in manifest files}
+
+Tables being stored in cloud datalakes are moving towards manifest-based indices over structures inferred by directory trees.
+If the manifest file includes the length of each file and the offset where the
+real footer begins, then the initial HEAD on a file open can be saved,
+and footer read can be optimized knowing the actual range, rather
+than guessed/manually configured.
+
+While this may seem a marginal gain, it is a tangible overhead when reading
+small files, and is a needless part of the read capacity of a cloud store.
+
+
+
+\subsubsection{cloud stores: Multi-ranged GET requests}.
 
 The HTTP protocol allows for a client to request multiple ranges of a file
 in the same request.
@@ -289,29 +509,12 @@ request, \emph{irrespecive of their location in the file}.
 This would assist coalescing range requests, reduce the number of HTTP requests
 needed while avoiding the need to discard data between ranges.
 
-\subsubsection{Footer prefetching and cacheing}
-
-As shown in \cite{zeng2023empirical}, and in our own analyisis of trace data
-obtained from audit logs of storage systems, reading the footer date of ORC and Parquet
-files can be a significant cost.
-
-When these files are first opened, the initial read sequence is
-
-\begin{itemize}
-  \item{open the file}
-  \item{read the final 8 bytes to validate filetype and the offset for the "real" footer}
-  \item{read the full footer}
-\end{itemize}
-
-On HDFS the costs of this are
-\begin{itemize}
-  \item{namenode: open the file}
-  \item{read the final 8 bytes to validate filetype and the offset for the "real" footer}
-  \item{read the full footer}
-\end{itemize}
 
 
+\section{Related Work}\label{sec:related-work}
 
+\section{Conclusions and Further Work}
+\label{sec:conclusions}
 
 
 
@@ -337,12 +540,194 @@ As much of that work was contributed by Mukund and Steve, we are grateful.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
+\bibliography{../citations/main}
+\bibliography{../citations/format}
+\bibliography{../citations/db}
 
 
 
 \appendix{}
 
-\section{Appendix}
+\section{Parquet Metadata Structure}
+\label{sec:parquet-metadata}
+
+The footer metadata is described in Parquet's thrift schema; here
+are selected parts of this.
+\begin{verbatim}
+/**
+ * Description for file metadata
+ */
+struct FileMetaData {
+  /** Version of this file **/
+  1: required i32 version
+
+  /** Parquet schema for this file.  This schema contains metadata for all the columns.
+   * The schema is represented as a tree with a single root.  The nodes of the tree
+   * are flattened to a list by doing a depth-first traversal.
+   * The column metadata contains the path in the schema for that column which can be
+   * used to map columns to nodes in the schema.
+   * The first element is the root **/
+  2: required list<SchemaElement> schema;
+
+  /** Number of rows in this file **/
+  3: required i64 num_rows
+
+  /** Row groups in this file **/
+  4: required list<RowGroup> row_groups
+
+  /** Optional key/value metadata **/
+  5: optional list<KeyValue> key_value_metadata
+
+  6: optional string created_by
+
+  /**
+   * Sort order used for the min_value and max_value fields in the Statistics
+   * objects and the min_values and max_values fields in the ColumnIndex
+   * objects of each column in this file.
+   */
+  7: optional list<ColumnOrder> column_orders;/
+  8: optional EncryptionAlgorithm encryption_algorithm
+  9: optional binary footer_signing_key_metadata
+}
+
+/** Crypto metadata for files with encrypted footer **/
+struct FileCryptoMetaData {
+
+  1: required EncryptionAlgorithm encryption_algorithm
+  2: optional binary key_metadata
+}
+
+struct RowGroup {
+  /** Metadata for each column chunk in this row group.
+   * This list must have the same order as the SchemaElement list in FileMetaData.
+   **/
+  1: required list<ColumnChunk> columns
+
+  /** Total byte size of all the uncompressed column data in this row group **/
+  2: required i64 total_byte_size
+
+  /** Number of rows in this row group **/
+  3: required i64 num_rows
+
+  /** If set, specifies a sort ordering of the rows in this RowGroup.
+   * The sorting columns can be a subset of all the columns.
+   */
+  4: optional list<SortingColumn> sorting_columns
+
+  /** Byte offset from beginning of file to first page (data or dictionary)
+   * in this row group **/
+  5: optional i64 file_offset
+
+  /** Total byte size of all compressed (and potentially encrypted) column data
+   *  in this row group **/
+  6: optional i64 total_compressed_size
+
+  /** Row group ordinal in the file **/
+  7: optional i16 ordinal
+}
+
+
+
+struct ColumnChunk {
+  /** File where column data is stored.  If not set, assumed to be same file as
+    * metadata.  This path is relative to the current file.
+    **/
+  1: optional string file_path
+
+  /** Byte offset in file_path to the ColumnMetaData **/
+  2: required i64 file_offset
+
+  /** Column metadata for this chunk. This is the same content as what is at
+   * file_path/file_offset.  Having it here has it replicated in the file
+   * metadata.
+   **/
+  3: optional ColumnMetaData meta_data
+
+  /** File offset of ColumnChunk's OffsetIndex **/
+  4: optional i64 offset_index_offset
+
+  /** Size of ColumnChunk's OffsetIndex, in bytes **/
+  5: optional i32 offset_index_length
+
+  /** File offset of ColumnChunk's ColumnIndex **/
+  6: optional i64 column_index_offset
+
+  /** Size of ColumnChunk's ColumnIndex, in bytes **/
+  7: optional i32 column_index_length
+
+  /** Crypto metadata of encrypted columns **/
+  8: optional ColumnCryptoMetaData crypto_metadata
+
+  /** Encrypted column metadata for this chunk **/
+  9: optional binary encrypted_column_metadata
+}
+
+**
+ * Represents a element inside a schema definition.
+ *  - if it is a group (inner node) then type is undefined and num_children is defined
+ *  - if it is a primitive type (leaf) then type is defined and num_children is undefined
+ * the nodes are listed in depth first traversal order.
+ */
+struct SchemaElement {
+  /** Data type for this field. Not set if the current element is a non-leaf node */
+  1: optional Type type;
+
+  /** If type is FIXED_LEN_BYTE_ARRAY, this is the byte length of the values.
+   * Otherwise, if specified, this is the maximum bit length to store any of the values.
+   * (e.g. a low cardinality INT col could have this set to 3).  Note that this is
+   * in the schema, and therefore fixed for the entire file.
+   */
+  2: optional i32 type_length;
+
+  /** repetition of the field. The root of the schema does not have a repetition_type.
+   * All other nodes must have one */
+  3: optional FieldRepetitionType repetition_type;
+
+  /** Name of the field in the schema */
+  4: required string name;
+
+  /** Nested fields.  Since thrift does not support nested fields,
+   * the nesting is flattened to a single list by a depth-first traversal.
+   * The children count is used to construct the nested relationship.
+   * This field is not set when the element is a primitive type
+   */
+  5: optional i32 num_children;
+
+  /**
+   * DEPRECATED: When the schema is the result of a conversion from another model.
+   * Used to record the original type to help with cross conversion.
+   *
+   * This is superseded by logicalType.
+   */
+  6: optional ConvertedType converted_type;
+
+  /**
+   * DEPRECATED: Used when this column contains decimal data.
+   * See the DECIMAL converted type for more details.
+   *
+   * This is superseded by using the DecimalType annotation in logicalType.
+   */
+  7: optional i32 scale
+  8: optional i32 precision
+
+  /** When the original schema supports field ids, this will save the
+   * original field id in the parquet schema
+   */
+  9: optional i32 field_id;
+
+  /**
+   * The logical type of this SchemaElement
+   *
+   * LogicalType replaces ConvertedType, but ConvertedType is still required
+   * for some logical types to ensure forward-compatibility in format v1.
+   */
+  10: optional LogicalType logicalType
+}
+
+
+\end{verbatim}
+
+\section{Postmortem}\label{sec:postmortem}
 We like to introspect and review what problems actually occurred
 in production.
 This helps us review our assumptions, consider how valid they proved
@@ -356,11 +741,18 @@ Hopefully others can learn from our mistakes.
 Default implementation reads into Direct (off JVM-heap buffer reads broken.
 This surfaced when adding tests for azure storage.
 Our previous tests against the local and S3 stores used custom implementations
-which were correct. Lesson: always test those defaults.
+which were correct.
+Lesson: always test those defaults.
 This has never been seen ``in the wild'' because the applications
 using the library do not seem to be reading into Direct buffers.
 As well as fixing the bug, the integration patch for Parquet reports all
 attempt to use vectored IO with Direct buffers as ``unsupported''.
 This ensures that even when using old releases, the bug will not surface.
+
+This issue was discovered while improving range checking as requested by
+the reviewers of the Parquet PR.
+This shows the value in code review: not only can it find bugs in
+the source code being reviewed, it can also find bugs in the code being
+invoked.
 
 \end{document}

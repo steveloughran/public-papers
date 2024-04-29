@@ -1,0 +1,498 @@
+##############################
+######## Related Work ########
+##############################
+
+# 1pc
+@inproceedings{stamos1990low,
+  title        = {A low-cost atomic commit protocol},
+  author       = {Stamos, James W and Cristian, Flaviu},
+  booktitle    = {Proceedings Ninth Symposium on Reliable Distributed Systems},
+  pages        = {66--75},
+  year         = {1990},
+  organization = {IEEE}
+}
+
+@inproceedings{abdallah1998one,
+  title        = {One-phase commit: does it make sense?},
+  author       = {Abdallah, Maha and Guerraoui, Rachid and Pucheral, Philippe},
+  booktitle    = {Proceedings 1998 International Conference on Parallel and Distributed Systems (Cat. No. 98TB100250)},
+  pages        = {182--192},
+  year         = {1998},
+  organization = {IEEE}
+}
+
+@inproceedings{congiu2012one,
+  title        = {One phase commit: A low overhead atomic commitment protocol for scalable metadata services},
+  author       = {Congiu, Giuseppe and Grawinkel, Matthias and Narasimhamurthy, Sai and Brinkmann, Andr{\'e}},
+  booktitle    = {2012 IEEE International Conference on Cluster Computing Workshops},
+  pages        = {16--24},
+  year         = {2012},
+  organization = {IEEE}
+}
+
+@inproceedings{lee2002single,
+  title        = {A single phase distributed commit protocol for main memory database systems},
+  author       = {Lee, Inseon and Yeom, Heon Young},
+  booktitle    = {Proceedings 16th International Parallel and Distributed Processing Symposium},
+  pages        = {8--pp},
+  year         = {2002},
+  organization = {IEEE}
+}
+
+@inproceedings{gupta2018easycommit,
+  title     = {EasyCommit: A Non-blocking Two-phase Commit Protocol.},
+  author    = {Gupta, Suyash and Sadoghi, Mohammad},
+  booktitle = {EDBT},
+  pages     = {157--168},
+  year      = {2018}
+}
+
+
+# non-blocking
+@inproceedings{skeen1981nonblocking,
+  title     = {Nonblocking commit protocols},
+  author    = {Skeen, Dale},
+  booktitle = {Proceedings of the 1981 ACM SIGMOD international conference on Management of data},
+  pages     = {133--142},
+  year      = {1981}
+}
+
+@article{babaoglu1993understanding,
+  title     = {Understanding non-blocking atomic commitment},
+  author    = {Babaoglu, Ozalp and Toueg, Sam},
+  journal   = {Distributed systems},
+  year      = {1993},
+  publisher = {Addison Wesley}
+}
+
+@inproceedings{abdallah1997non,
+  title        = {A non-blocking single-phase commit protocol for rigorous participants},
+  author       = {Abdallah, Maha},
+  booktitle    = {In Proceedings of the National Conference Bases de Donnes Avances},
+  year         = {1997},
+  organization = {Citeseer}
+}
+
+# other
+@article{gray2006,
+  author     = {Gray, Jim and Lamport, Leslie},
+  title      = {Consensus on Transaction Commit},
+  year       = {2006},
+  issue_date = {March 2006},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {31},
+  number     = {1},
+  issn       = {0362-5915},
+  url        = {https://doi.org/10.1145/1132863.1132867},
+  doi        = {10.1145/1132863.1132867},
+  abstract   = {The distributed transaction commit problem requires reaching agreement on whether
+                a transaction is committed or aborted. The classic Two-Phase Commit protocol blocks
+                if the coordinator fails. Fault-tolerant consensus algorithms also reach agreement,
+                but do not block whenever any majority of the processes are working. The Paxos Commit
+                algorithm runs a Paxos consensus algorithm on the commit/abort decision of each participant
+                to obtain a transaction commit protocol that uses 2F + 1 coordinators and makes progress
+                if at least F + 1 of them are working properly. Paxos Commit has the same stable-storage
+                write delay, and can be implemented to have the same message delay in the fault-free
+                case as Two-Phase Commit, but it uses more messages. The classic Two-Phase Commit
+                algorithm is obtained as the special F = 0 case of the Paxos Commit algorithm.},
+  journal    = {ACM Trans. Database Syst.},
+  month      = mar,
+  pages      = {133–160},
+  numpages   = {28},
+  keywords   = {two-phase commit, Paxos, Consensus}
+}
+
+@article{stamos1993coordinator,
+  title     = {Coordinator log transaction execution protocol},
+  author    = {Stamos, James W and Cristian, Flaviu},
+  journal   = {Distributed and Parallel Databases},
+  volume    = {1},
+  number    = {4},
+  pages     = {383--408},
+  year      = {1993},
+  publisher = {Springer}
+}
+
+@inproceedings{al1995two,
+  title     = {Two-phase commit in gigabit-networked distributed databases},
+  author    = {Al-Houmaily, Y and Chrysanthis, P},
+  booktitle = {Int. Conf. on Parallel and Distributed Computing Systems (PDCS)},
+  year      = {1995}
+}
+
+@article{mohan1986transaction,
+  title     = {Transaction management in the R* distributed database management system},
+  author    = {Mohan, C and Lindsay, Bruce and Obermarck, Ron},
+  journal   = {ACM Transactions on Database Systems (TODS)},
+  volume    = {11},
+  number    = {4},
+  pages     = {378--396},
+  year      = {1986},
+  publisher = {ACM New York, NY, USA}
+}
+
+@inproceedings{kraska2013mdcc,
+  title     = {MDCC: Multi-data center consistency},
+  author    = {Kraska, Tim and Pang, Gene and Franklin, Michael J and Madden, Samuel and Fekete, Alan},
+  booktitle = {Proceedings of the 8th ACM European Conference on Computer Systems},
+  pages     = {113--126},
+  year      = {2013}
+}
+
+@article{mahmoud2013low,
+  title     = {Low-latency multi-datacenter databases using replicated commit},
+  author    = {Mahmoud, Hatem and Nawab, Faisal and Pucher, Alexander and Agrawal, Divyakant and El Abbadi, Amr},
+  journal   = {Proceedings of the VLDB Endowment},
+  volume    = {6},
+  number    = {9},
+  pages     = {661--672},
+  year      = {2013},
+  publisher = {VLDB Endowment}
+}
+
+@article{zhang2018building,
+  title     = {Building consistent transactions with inconsistent replication},
+  author    = {Zhang, Irene and Sharma, Naveen Kr and Szekeres, Adriana and Krishnamurthy, Arvind and Ports, Dan RK},
+  journal   = {ACM Transactions on Computer Systems (TOCS)},
+  volume    = {35},
+  number    = {4},
+  pages     = {1--37},
+  year      = {2018},
+  publisher = {ACM New York, NY, USA}
+}
+
+@inproceedings{yan2018carousel,
+  title     = {Carousel: Low-latency transaction processing for globally-distributed data},
+  author    = {Yan, Xinan and Yang, Linguan and Zhang, Hongbo and Lin, Xiayue Charles and Wong, Bernard and Salem, Kenneth and Brecht, Tim},
+  booktitle = {Proceedings of the 2018 International Conference on Management of Data},
+  pages     = {231--243},
+  year      = {2018}
+}
+
+@inproceedings{verbitski2017amazon,
+  title     = {Amazon aurora: Design considerations for high throughput cloud-native relational databases},
+  author    = {Verbitski, Alexandre and Gupta, Anurag and Saha, Debanjan and Brahmadesam, Murali and Gupta, Kamal and Mittal, Raman and Krishnamurthy, Sailesh and Maurice, Sandor and Kharatishvili, Tengiz and Bao, Xiaofeng},
+  booktitle = {Proceedings of the 2017 ACM International Conference on Management of Data},
+  pages     = {1041--1052},
+  year      = {2017}
+}
+
+@inproceedings{verbitski2018amazon,
+  title     = {Amazon aurora: On avoiding distributed consensus for i/os, commits, and membership changes},
+  author    = {Verbitski, Alexandre and Gupta, Anurag and Saha, Debanjan and Corey, James and Gupta, Kamal and Brahmadesam, Murali and Mittal, Raman and Krishnamurthy, Sailesh and Maurice, Sandor and Kharatishvilli, Tengiz and others},
+  booktitle = {Proceedings of the 2018 International Conference on Management of Data},
+  pages     = {789--796},
+  year      = {2018}
+}
+
+@online{vanBenschoten2019,
+  author  = {Nathan VanBenschoten},
+  title   = {Parallel Commits: An Atomic Commit Protocol For Globally Distributed Transactions},
+  year    = 2019,
+  url     = {https://www.cockroachlabs.com/blog/parallel-commits/},
+  urldate = {2019-11-07}
+}
+
+@online{parallelcommits,
+  title = {Parallel Commits},
+  url   = {https://www.cockroachlabs.com/docs/v20.2/architecture/transaction-layer.html#parallel-commits},
+  year  = 2020
+}
+
+@inproceedings{taft2020cockroachdb,
+  title     = {Cockroachdb: The resilient geo-distributed SQL database},
+  author    = {Taft, Rebecca and Sharif, Irfan and Matei, Andrei and VanBenschoten, Nathan and Lewis, Jordan and Grieger, Tobias and Niemi, Kai and Woods, Andy and Birzin, Anne and Poss, Raphael and others},
+  booktitle = {Proceedings of the 2020 ACM SIGMOD International Conference on Management of Data},
+  pages     = {1493--1509},
+  year      = {2020}
+}
+
+@inproceedings{guerraoui1995non,
+  title        = {Non blocking atomic commitment with an unreliable failure detector},
+  author       = {Guerraoui, Rachid and Larrea, Mikel and Schiper, Andr{\'e}},
+  booktitle    = {Proceedings. 14th Symposium on Reliable Distributed Systems},
+  pages        = {41--50},
+  year         = {1995},
+  organization = {IEEE}
+}
+
+@inproceedings{samaras1993two,
+  title        = {Two-phase commit optimizations and tradeoffs in the commercial environment},
+  author       = {Samaras, George and Britton, Kathryn and Citron, Andrew and Mohan, C},
+  booktitle    = {Proceedings of IEEE 9th International Conference on Data Engineering},
+  pages        = {520--529},
+  year         = {1993},
+  organization = {IEEE}
+}
+
+@article{fan2019ocean,
+  title     = {Ocean vista: gossip-based visibility control for speedy geo-distributed transactions},
+  author    = {Fan, Hua and Golab, Wojciech},
+  journal   = {Proceedings of the VLDB Endowment},
+  volume    = {12},
+  number    = {11},
+  pages     = {1471--1484},
+  year      = {2019},
+  publisher = {VLDB Endowment}
+}
+
+#######################
+######## Review 2. ########
+#######################
+
+@inproceedings{jones2010low,
+  title     = {Low overhead concurrency control for partitioned main memory databases},
+  author    = {Jones, Evan PC and Abadi, Daniel J and Madden, Samuel},
+  booktitle = {Proceedings of the 2010 ACM SIGMOD International Conference on Management of data},
+  pages     = {603--614},
+  year      = {2010}
+}
+
+@inproceedings{loesing2015design,
+  title     = {On the design and scalability of distributed shared-data databases},
+  author    = {Loesing, Simon and Pilman, Markus and Etter, Thomas and Kossmann, Donald},
+  booktitle = {Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data},
+  pages     = {663--676},
+  year      = {2015}
+}
+
+@article{zhu2020logless,
+  title     = {Logless one-phase commit made possible for highly-available datastores},
+  author    = {Zhu, Yuqing and Philip, S Yu and Yi, Guolei and Guo, Mengying and Ma, Wenlong and Liu, Jianxun and Bao, Yungang},
+  journal   = {Distributed and Parallel Databases},
+  volume    = {38},
+  number    = {1},
+  pages     = {101--126},
+  year      = {2020},
+  publisher = {Springer}
+}
+
+#######################
+######## Misc. ########
+#######################
+
+@inproceedings{Duplyakin+:ATC19,
+  title     = {The Design and Operation of {CloudLab}},
+  author    = {Dmitry Duplyakin and Robert Ricci and Aleksander Maricq and Gary Wong and Jonathon Duerig and Eric Eide and Leigh Stoller and Mike Hibler and David Johnson and Kirk Webb and Aditya Akella and Kuangching Wang and Glenn Ricart and Larry Landweber and Chip Elliott and Michael Zink and Emmanuel Cecchet and Snigdhaswin Kar and Prabodh Mishra},
+  booktitle = {Proceedings of the {USENIX} Annual Technical Conference (ATC)},
+  pages     = {1--14},
+  year      = 2019,
+  month     = jul,
+  url       = {https://www.flux.utah.edu/paper/duplyakin-atc19}
+}
+
+#######################
+######## Cloud DB. ########
+#######################
+
+
+@inproceedings{sparksql,
+  title     = {{Spark SQL: Relational Data Processing in Spark}},
+  author    = {Armbrust, Michael and Xin, Reynold S and Lian, Cheng and Huai, Yin and Liu, Davies and Bradley, Joseph K and Meng, Xiangrui and Kaftan, Tomer and Franklin, Michael J and Ghodsi, Ali and others},
+  booktitle = {SIGMOD},
+  year      = {2015}
+}
+
+@inbook{foundationdb,
+  author    = {Zhou, Jingyu and Xu, Meng and Shraer, Alexander and Namasivayam, Bala and Miller, Alex and Tschannen, Evan and Atherton, Steve and Beamon, Andrew J. and Sears, Rusty and Leach, John and Rosenthal, Dave and Dong, Xin and Wilson, Will and Collins, Ben and Scherer, David and Grieser, Alec and Liu, Young and Moore, Alvin and Muppana, Bhaskar and Su, Xiaoge and Yadav, Vishesh},
+  title     = {FoundationDB: A Distributed Unbundled Transactional Key Value Store},
+  year      = {2021},
+  isbn      = {9781450383431},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3448016.3457559},
+  booktitle = {Proceedings of the 2021 International Conference on Management of Data},
+  pages     = {2653–2666},
+  numpages  = {14}
+}
+
+@misc{spectrum,
+  howpublished = {\url{https://aws.amazon.com/redshift}},
+  year         = {2018},
+  title        = {{Amazon Redshift}}
+}
+
+@misc{aqua,
+  howpublished = {\url{https://pages.awscloud.com/AQUA_Preview.html}},
+  title        = {{AQUA (Advanced Query Accelerator) for Amazon Redshift}},
+  year         = {2020}
+}
+
+@inproceedings{redshift,
+  title     = {{Amazon Redshift and the Case for Simpler Data Warehouses}},
+  author    = {Gupta, Anurag and Agarwal, Deepak and Tan, Derek and Kulesza, Jakub and Pathak, Rahul and Stefani, Stefano and Srinivasan, Vidhya},
+  booktitle = {SIGMOD},
+  year      = {2015}
+}
+
+@inproceedings{snowflake,
+  title     = {{The Snowflake Elastic Data Warehouse}},
+  author    = {Dageville, Benoit and Cruanes, Thierry and Zukowski, Marcin and Antonov, Vadim and Avanes, Artin and Bock, Jon and Claybaugh, Jonathan and Engovatov, Daniel and Hentschel, Martin and Huang, Jiansheng and others},
+  booktitle = {SIGMOD},
+  year      = {2016}
+}
+
+
+@misc{athena,
+  title        = {{Amazon Athena --- Serverless Interactive Query Service}},
+  year         = {2018},
+  howpublished = {\url{https://aws.amazon.com/athena}}
+}
+
+@misc{grpc,
+  howpublished = {\url{https://grpc.io/}},
+  year         = {2015},
+  title        = {{gRPC: A high performance, open-source universal RPC framework}}
+}
+
+@inproceedings{cooper2010benchmarking,
+  title     = {Benchmarking cloud serving systems with YCSB},
+  author    = {Cooper, Brian F and Silberstein, Adam and Tam, Erwin and Ramakrishnan, Raghu and Sears, Russell},
+  booktitle = {Proceedings of the 1st ACM symposium on Cloud computing},
+  pages     = {143--154},
+  year      = {2010}
+}
+
+
+#################################
+######## Storage Service ########
+#################################
+
+@inproceedings{calder2011windows,
+  title     = {Windows azure storage: a highly available cloud storage service with strong consistency},
+  author    = {Calder, Brad and Wang, Ju and Ogus, Aaron and Nilakantan, Niranjan and Skjolsvold, Arild and McKelvie, Sam and Xu, Yikang and Srivastav, Shashwat and Wu, Jiesheng and Simitci, Huseyin and others},
+  booktitle = {Proceedings of the Twenty-Third ACM Symposium on Operating Systems Principles},
+  pages     = {143--157},
+  year      = {2011}
+}
+
+@article{decandia2007dynamo,
+  title     = {Dynamo: Amazon's highly available key-value store},
+  author    = {DeCandia, Giuseppe and Hastorun, Deniz and Jampani, Madan and Kakulapati, Gunavardhan and Lakshman, Avinash and Pilchin, Alex and Sivasubramanian, Swaminathan and Vosshall, Peter and Vogels, Werner},
+  journal   = {ACM SIGOPS operating systems review},
+  volume    = {41},
+  number    = {6},
+  pages     = {205--220},
+  year      = {2007},
+  publisher = {ACM New York, NY, USA}
+}
+
+@misc{redis,
+  title        = {{Redis}},
+  howpublished = {\url{https://redis.io}}
+}
+
+@misc{redis-lua,
+  title        = {Redis EVAL script},
+  howpublished = {\url{https://redis.io/commands/eval}}
+}
+
+@misc{redis-cpp,
+  title        = {cpp\_redis},
+  howpublished = {\url{https://github.com/cpp-redis/cpp_redis}}
+}
+
+@misc{redis-acl,
+  title        = {Redis ACL},
+  howpublished = {\url{https://redis.io/topics/acl}}
+}
+
+@misc{azure-redis,
+  title        = {Azure Cache for Redis},
+  howpublished = {\url{https://azure.microsoft.com/en-us/services/cache/}}
+}
+
+@misc{azure-etag,
+  title        = {Managing Concurrency in Microsoft Azure Storage},
+  howpublished = {\url{https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/}},
+  year         = {2014}
+}
+
+@misc{azure-acl,
+  title        = {Understand scope for Azure RBAC},
+  howpublished = {\url{https://docs.microsoft.com/en-us/azure/role-based-access-control/scope-overview}},
+  year         = {2014}
+}
+
+@misc{google-cas,
+  title        = {Google Cloud BigTable --- Writes},
+  howpublished = {\url{https://cloud.google.com/bigtable/docs/writes##conditional}}
+}
+
+@misc{dynamo-cas,
+  title        = {Amazon DynamoDB API Operations},
+  howpublished = {\url{https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html}}
+}
+
+@misc{dynamo-acl,
+  title        = {Amazon DynamoDB: Allows item-level access to DynamoDB based on an Amazon Cognito ID},
+  howpublished = {\url{https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html}}
+}
+
+@misc{google-acl,
+  title        = {Google Cloud --- Access Control},
+  howpublished = {\url{https://cloud.google.com/bigtable/docs/access-control}}
+}
+
+
+@inproceedings{chang2008bigtable,
+  title     = {Bigtable: A distributed storage system for structured data},
+  author    = {Chang, Fay and Dean, Jeffrey and Ghemawat, Sanjay and Hsieh, Wilson C and Wallach, Deborah A and Burrows, Mike and Chandra, Tushar and Fikes, Andrew and Gruber, Robert E},
+  journal   = {ACM Transactions on Computer Systems (TOCS)},
+  volume    = {26},
+  number    = {2},
+  pages     = {1--26},
+  year      = {2008},
+  publisher = {ACM New York, NY, USA}
+}
+
+@inproceedings{peng2010Percolator,
+  title     = {Large-scale Incremental Processing Using Distributed Transactions and Notifications},
+  author    = {Daniel Peng and Frank Dabek},
+  year      = {2010},
+  booktitle = {Proceedings of the 9th USENIX Symposium on Operating Systems Design and Implementation}
+}
+
+@inproceedings{armburst2020deltalake,
+  author     = {Armbrust, Michael and Das, Tathagata and Sun, Liwen and Yavuz, Burak and Zhu, Shixiong and Murthy, Mukul and Torres, Joseph and van Hovell, Herman and Ionescu, Adrian and \L{}uszczak, Alicja and undefinedwitakowski, Micha\l{} and Szafra\'{n}ski, Micha\l{} and Li, Xiao and Ueshin, Takuya and Mokhtar, Mostafa and Boncz, Peter and Ghodsi, Ali and Paranjpye, Sameer and Senster, Pieter and Xin, Reynold and Zaharia, Matei},
+  title      = {Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores},
+  year       = {2020},
+  issue_date = {August 2020},
+  publisher  = {VLDB Endowment},
+  volume     = {13},
+  number     = {12},
+  issn       = {2150-8097},
+  url        = {https://doi.org/10.14778/3415478.3415560},
+  doi        = {10.14778/3415478.3415560},
+  journal    = {Proc. VLDB Endow.},
+  month      = {aug},
+  pages      = {3411–3424},
+  numpages   = {14}
+}
+
+@inproceedings{brantner2008building,
+  author    = {Brantner, Matthias and Florescu, Daniela and Graf, David and Kossmann, Donald and Kraska, Tim},
+  title     = {Building a Database on S3},
+  year      = {2008},
+  isbn      = {9781605581026},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/1376616.1376645},
+  doi       = {10.1145/1376616.1376645},
+  booktitle = {Proceedings of the 2008 ACM SIGMOD International Conference on Management of Data},
+  pages     = {251–264},
+  numpages  = {14},
+  keywords  = {simpledb, sqs, storage system, database, aws, cloud computing, ec2, concurrency, s3, eventual consistency, cost trade-off, performance},
+  location  = {Vancouver, Canada},
+  series    = {SIGMOD '08}
+}
+
+@inproceedings{guo2021lock,
+  title        = {Lock Violation for Fault-tolerant Distributed Database System},
+  author       = {Guo, Hua and Zhou, Xuan and Cai, Le},
+  booktitle    = {2021 IEEE 37th International Conference on Data Engineering (ICDE)},
+  pages        = {1416--1427},
+  year         = {2021},
+  organization = {IEEE}
+}

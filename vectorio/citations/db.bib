@@ -1,0 +1,997 @@
+###########################
+# Concurrency Control Protocol
+###########################
+# timestamp range
+@inproceedings{lomet2012multi,
+  title={{Multi-Version Concurrency via Timestamp Range Conflict Management}},
+  author={Lomet, David and Fekete, Alan and Wang, Rui and Ward, Peter},
+  booktitle={ICDE},
+  pages={714--725},
+  year={2012},
+}
+# DTA
+@inproceedings{bayer82,
+ title = {{Dynamic Timestamp Allocation for Transactions in Database Systems}},
+ author = {Rudolf Bayer and Klaus Elhardt and Johannes Heigert and Angelika Reiser},
+ booktitle = {DDB},
+ pages = {9--20},
+ year = {1982},
+}
+# original OCC
+@article{kung1981optimistic,
+  title={On optimistic methods for concurrency control},
+  author={Kung, Hsiang-Tsung and Robinson, John T},
+  journal={ACM Transactions on Database Systems (TODS)},
+  volume={6},
+  number={2},
+  pages={213--226},
+  year={1981},
+  publisher={ACM New York, NY, USA}
+}
+# an OCC protocol using DTA
+@article{boksenbaum1987,
+  title={{Concurrent Certifications by Intervals of Timestamps in Distributed Database Systems}},
+  author={Boksenbaum, Claude and Ferrie, J and Pons, J-F},
+  journal={TSE},
+  pages={409--419},
+  year={1987},
+}
+# an OCC protocol using DTA
+@inproceedings{lam1995,
+  title={{Real-Time Optimistic Concurrency Control Protocol with Dynamic Adjustment of Serialization Order}},
+  author={Lam, Kwok-Wa and Lam, Kam-Yiu and Hung, Sheung-Lun},
+  booktitle={RTAS},
+  pages={174--179},
+  year={1995},
+}
+# an OCC protocol using DTA
+@inproceedings{lee1993,
+  title={{Using Dynamic Adjustment of Serialization Order for Real-Time Database Systems}},
+  author={Lee, Juhnyoung and Son, Sang H},
+  booktitle={RTSS},
+  pages={66--75},
+  year={1993},
+}
+
+@article{adya1995,
+  title={{Efficient Optimistic Concurrency Control Using Loosely Synchronized Clocks}},
+  author={Adya, Atul and Gruber, Robert and Liskov, Barbara and Maheshwari, Umesh},
+  journal={ACM SIGMOD Record},
+  pages={23--34},
+  year={1995},
+}
+
+@article{ding2018improving,
+  title={Improving optimistic concurrency control through transaction batching and operation reordering},
+  author={Ding, Bailu and Kot, Lucja and Gehrke, Johannes},
+  journal={Proceedings of the VLDB Endowment},
+  volume={12},
+  number={2},
+  pages={169--182},
+  year={2018},
+  publisher={VLDB Endowment}
+}
+
+# transaction chopping / static analysis
+@inproceedings{wang2016scaling,
+  title={Scaling multicore databases via constrained parallel execution},
+  author={Wang, Zhaoguo and Mu, Shuai and Cui, Yang and Yi, Han and Chen, Haibo and Li, Jinyang},
+  booktitle={Proceedings of the 2016 International Conference on Management of Data},
+  pages={1643--1658},
+  year={2016}
+}
+
+@inproceedings{xie2015high,
+  title={High-performance ACID via modular concurrency control},
+  author={Xie, Chao and Su, Chunzhi and Littley, Cody and Alvisi, Lorenzo and Kapritsos, Manos and Wang, Yang},
+  booktitle={Proceedings of the 25th Symposium on Operating Systems Principles},
+  pages={279--294},
+  year={2015}
+}
+
+# 2PL protocol
+@article{eswaran76,
+    author = {Eswaran, K. P. and Gray, J. N. and Lorie, R. A. and Traiger, I. L.},
+    title = {{The Notions of Consistency and Predicate Locks in a Database System}},
+    journal = {CACM},
+    year = {1976},
+    pages = {624--633},
+} 
+# 2PL correctness proof
+@article{bernstein79,
+    author = {Phillip A. Bernstein and D.W. Shipman and W.S. Wong},
+    title = {{Formal Aspects of Serializability in Database Concurrency Control}},
+    journal ={TSE},
+    year = {1979},
+    pages = {203--216},
+}
+# wound-wait and wait-die
+@article{rosenkrantz1978system,
+  title={{System Level Concurrency Control for Distributed Database Systems}},
+  author={Rosenkrantz, Daniel J and Stearns, Richard E and Lewis, Philip M},
+  journal={ACM Transactions on Database Systems (TODS)},
+  volume={3},
+  number={2},
+  pages={178--198},
+  year={1978},
+  publisher={ACM New York, NY, USA}
+}
+
+@book{bernstein1987concurrency,
+  title={Concurrency control and recovery in database systems},
+  author={Bernstein, Philip A and  Hadzilacos, Vassos and Goodman, Nathan },
+  volume={370},
+  year={1987},
+  publisher={Addison-wesley New York}
+}
+
+@article{faleiro2017high,
+  title={High performance transactions via early write visibility},
+  author={Faleiro, Jose M and Abadi, Daniel J and Hellerstein, Joseph M},
+  journal={Proceedings of the VLDB Endowment},
+  volume={10},
+  number={5},
+  pages={613--624},
+  year={2017},
+  publisher={VLDB Endowment}
+}
+#======================
+# Predicate locking
+#======================
+# Predicate locks.
+# [eswaran76]  see above.
+
+# Precision locks
+@inproceedings{jordan1981precision,
+  title={Precision locks},
+  author={Jordan, JR and Banerjee, J and Batman, RB},
+  booktitle={SIGMOD},
+  pages={143--147},
+  year={1981},
+  organization={ACM}
+}
+
+# Transaction chopping
+@article{shasha1995transaction,
+  title={{Transaction Chopping: Algorithms and Performance Studies}},
+  author={Shasha, Dennis and Llirbat, Francois and Simon, Eric and Valduriez, Patrick},
+  journal={ACM Transactions on Database Systems (TODS)},
+  volume={20},
+  number={3},
+  pages={325--363},
+  year={1995},
+  publisher={ACM New York, NY, USA}
+}
+@book{weikum2001transactional,
+  title={Transactional information systems: theory, algorithms, and the practice of concurrency control and recovery},
+  author={Weikum, Gerhard and Vossen, Gottfried},
+  year={2001},
+  publisher={Elsevier}
+}
+@inproceedings{zhang2013transaction,
+  title={Transaction chains: achieving serializability with low latency in geo-distributed storage systems},
+  author={Zhang, Yang and Power, Russell and Zhou, Siyuan and Sovran, Yair and Aguilera, Marcos K and Li, Jinyang},
+  booktitle={SOSP},
+  pages={276--291},
+  year={2013}
+}
+
+# Qura
+@article{yan2016leveraging,
+  title={{Leveraging Lock Contention to Improve OLTP Application Performance}},
+  author={Yan, Cong and Cheung, Alvin},
+  journal={Proceedings of the VLDB Endowment},
+  volume={9},
+  number={5},
+  pages={444--455},
+  year={2016},
+  publisher={VLDB Endowment}
+}
+
+#======================
+# Hybrid CC.
+#======================
+@inproceedings{su2017bringing,
+  title={Bringing modular concurrency control to the next level},
+  author={Su, Chunzhi and Crooks, Natacha and Ding, Cong and Alvisi, Lorenzo and Xie, Chao},
+  booktitle={Proceedings of the 2017 ACM International Conference on Management of Data},
+  pages={283--297},
+  year={2017},
+  organization={ACM}
+}
+
+@article{wang2016mostly,
+  title={Mostly-optimistic concurrency control for highly contended dynamic workloads on a thousand cores},
+  author={Wang, Tianzheng and Kimura, Hideaki},
+  journal={Proceedings of the VLDB Endowment},
+  volume={10},
+  number={2},
+  pages={49--60},
+  year={2016},
+  publisher={VLDB Endowment}
+}
+
+
+### Concurrency Control Summary 
+@article{bernstein81,
+  title     = {{Concurrency Control in Distributed Database Systems}},
+  author    = {Philip A. Bernstein and Nathan Goodman},
+  journal   = {CSUR},
+  year      = {1981},
+  pages     = {185-221},
+}
+
+
+#==========================
+# Concurrency Control Evalution
+#==========================
+# Multicore
+@inproceedings{yu2014,
+ author = {Yu, Xiangyao and Bezerra, George and Pavlo, Andrew and Devadas, Srinivas and Stonebraker, Michael},
+ journal = {VLDB},
+ pages = {209--220},
+ title = {{Staring into the Abyss: An Evaluation of Concurrency Control with One Thousand Cores}},
+ year = {2014},
+}
+
+# Distributed DBMS
+@article{harding2017,
+ author = {Harding, Rachael and Van Aken, Dana and Pavlo, Andrew and Stonebraker, Michael},
+ title = {{An Evaluation of Distributed Concurrency Control}},
+ journal = {VLDB},
+ year = {2017},
+ pages = {553--564},
+}
+# MVCC
+@article{wu17,
+  author = {Yingjun Wu and Joy Arulraj and Jiexi Lin and Ran Xian and Andrew Pavlo},
+  title = {{An Empirical Evaluation of In-Memory Multi-Version Concurrency Control}},
+  journal = {VLDB},
+  year = {2017},
+  pages = {781--792},
+}
+
+
+###########################
+# Multicore Transaction System
+###########################
+# Hekaton
+@inproceedings{diaconu13,
+    author = {Diaconu, Cristian and Freedman, Craig and Ismert, Erik and Larson, Per-Ake and Mittal, Pravin and 
+             Stonecipher, Ryan and Verma, Nitin and Zwilling, Mike},
+    title = {{Hekaton: {SQL} {S}erver's Memory-Optimized {OLTP} Engine}},
+    booktitle = {SIGMOD},
+    year = {2013},
+    pages = {1243--1254}
+}
+# Silo
+@inproceedings{tu13,
+    author = {Stephen Tu and Wenting Zheng and Eddie Kohler and Barbara Liskov and Samuel Madden},
+    title = {{Speedy Transactions in Multicore In-Memory Databases}},
+    booktitle = {SOSP},
+    year = {2013},
+}
+# TicToc
+@inproceedings{tictoc,
+ author = {Yu, Xiangyao and Pavlo, Andrew and Sanchez, Daniel and Devadas, Srinivas},
+ booktitle = {SIGMOD},
+ title = {{TicToc: Time Traveling Optimistic Concurrency Control}},
+ year = {2016},
+ pages = {1629 -- 1642}
+}
+ 
+# The CC behind Hekaton
+@article{larson11,
+    author = {Larson, Per-\AAke and Blanas, Spyros and Diaconu, Cristian and Freedman, Craig and Patel, Jignesh M. and 
+    Zwilling, Mike},
+    title = {{High-Performance Concurrency Control Mechanisms for Main-Memory Databases}},
+    journal = {VLDB},
+    year = {2011},
+    pages = {298--309}
+}
+# BOHM
+@article{faleiro15,
+  author    = {Jose M. Faleiro and Daniel J. Abadi},
+  title     = {{Rethinking Serializable Multiversion Concurrency Control}},
+  journal   = {{PVLDB}},
+  pages     = {1190--1201},
+  year      = {2015},
+}
+# ERMIA
+@inproceedings{kim2016ermia,
+  title={{ERMIA: Fast Memory-Optimized Database System for Heterogeneous Workloads}},
+  author={Kim, Kangnyeon and Wang, Tianzheng and Johnson, Ryan and Pandis, Ippokratis},
+  booktitle={SIGMOD},
+  pages={1675--1687},
+  year={2016},
+}
+# Cicada
+@inproceedings{cicada,
+  title={{Cicada: Dependably Fast Multi-Core In-Memory Transactions}},
+  author={Lim, Hyeontaek and Kaminsky, Michael and Andersen, David G},
+  booktitle={SIGMOD},
+  pages={21--35},
+  year={2017},
+}
+# A MVCC with SR
+@inproceedings{neumann2015fast,
+  title={{Fast Serializable Multi-Version Concurrency Control for Main-Memory Database Systems}},
+  author={Neumann, Thomas and M{\"u}hlbauer, Tobias and Kemper, Alfons},
+  booktitle={SIGMOD},
+  pages={677--689},
+  year={2015},
+}
+# BCC
+@article{yuan2016bcc,
+  title={{BCC: Reducing False Aborts in Optimistic Concurrency Control with Low Cost for In-Memory Databases}},
+  author={Yuan, Yuan and Wang, Kaibo and Lee, Rubao and Ding, Xiaoning and Xing, Jing and Blanas, Spyros and Zhang, Xiaodong},
+  journal={VLDB},
+  pages={504--515},
+  year={2016},
+}
+# Transaction Healing
+@inproceedings{wu16,
+  title={{Transaction Healing: Scaling Optimistic Concurrency Control on Multicores}},
+  author={Wu, Yingjun and Chan, Chee-Yong and Tan, Kian-Lee},
+  booktitle={SIGMOD},
+  pages={1689--1704},
+  year={2016},
+}
+
+###########################
+# Distributed Transaction System
+###########################
+# Spanner
+@inproceedings{corbett12, 
+    author = {James C. Corbett and et al.}, 
+    title = {{Spanner: Google's Globally-Distributed Database}}, 
+    booktitle = {OSDI}, 
+    year = 2012, 
+    pages = {251--264},
+}
+# Spanner CC
+@article{malkhi2013spanner,
+  title={Spanner's concurrency control},
+  author={Malkhi, Dahlia and Martin, Jean-Philippe},
+  journal={ACM SIGACT News},
+  volume={44},
+  number={3},
+  pages={73--77},
+  year={2013},
+  publisher={ACM New York, NY, USA}
+}
+
+# F1
+@article{f1,
+  title={{F1: A Distributed SQL Database that Scales}},
+  author={Shute, Jeff and Vingralek, Radek and Samwel, Bart and Handy, Ben and Whipkey, Chad and Rollins, Eric and Oancea, Mircea and Littlefield, Kyle and Menestrina, David and Ellner, Stephan and others},
+  journal={VLDB},
+  pages={1068--1079},
+  year={2013},
+}
+# Calvin
+@inproceedings{thomson12,
+    author = {Thomson, Alexander and Diamond, Thaddeus and Weng, Shu-Chun and Ren, Kun and Shao, Philip and Abadi,
+Daniel J.},
+    title = {{Calvin: Fast Distributed Transactions for Partitioned Database Systems}},
+    booktitle = {SIGMOD},
+    year = {2012},
+    pages = {1--12},
+}
+
+# MaaT
+@article{maat,
+  title={{MaaT: Effective and Scalable Coordination of Distributed Transactions in the Cloud}},
+  author={Mahmoud, Hatem A and Arora, Vaibhav and Nawab, Faisal and Agrawal, Divyakant and El Abbadi, Amr},
+  journal={VLDB},
+  pages={329--340},
+  year={2014},
+}
+# Rococo
+@inproceedings{rococo,
+  title={{Extracting More Concurrency from Distributed Transactions}},
+  author={Mu, Shuai and Cui, Yang and Zhang, Yang and Lloyd, Wyatt and Li, Jinyang},
+  booktitle={OSDI},
+  pages={479--494},
+  year={2014}
+}
+
+
+# G-Store
+@inproceedings{das2010g,
+  title={{G-Store: a Scalable Data Store for Transactional Multi key Access in the Cloud}},
+  author={Das, Sudipto and Agrawal, Divyakant and El Abbadi, Amr},
+  booktitle={SoCC},
+  pages={163--174},
+  year={2010},
+}
+
+# Sundial
+@article{yu2018sundial,
+  title={Sundial: harmonizing concurrency control and caching in a distributed OLTP database management system},
+  author={Yu, Xiangyao and Xia, Yu and Pavlo, Andrew and Sanchez, Daniel and Rudolph, Larry and Devadas, Srinivas},
+  journal={Proceedings of the VLDB Endowment},
+  volume={11},
+  number={10},
+  pages={1289--1302},
+  year={2018},
+  publisher={VLDB Endowment}
+}
+
+#=====================
+# RDMA
+#=====================
+# The detailed FaRM protocol
+@inproceedings{dragojevic15,
+    author = {Dragojevi\'{c}, Aleksandar and Narayanan, Dushyanth and Nightingale, Edmund B. and 
+              Renzelmann, Matthew and Shamis, Alex and Badam, Anirudh and Castro, Miguel},
+    title = {{No Compromises: Distributed Transactions with Consistency, Availability, and 
+                Performance}},
+    booktitle = {SOSP},
+    year = {2015},
+    pages = {54--70},
+} 
+# DrTM
+@inproceedings{wei15,
+    author = {Wei, Xingda and Shi, Jiaxin and Chen, Yanzhe and Chen, Rong and Chen, Haibo},
+    title = {Fast In-memory Transaction Processing Using {RDMA and HTM}},
+    booktitle = {SOSP},
+    year = {2015}
+}
+# NAM-DB
+@article{zamanian2017,
+  title={{The End of a Myth: Distributed Transactions Can Scale}},
+  author={Zamanian, Erfan and Binnig, Carsten and Harris, Tim and Kraska, Tim},
+  journal={VLDB},
+  pages={685--696},
+  year={2017},
+}
+
+###########################
+# Vector Clock
+###########################
+@book{fidge1987timestamps,
+  title={Timestamps in message-passing systems that preserve the partial ordering},
+  author={Fidge, Colin J},
+  year={1987},
+  publisher={Australian National University. Department of Computer Science}
+}
+@book{mattern1988virtual,
+  title={Virtual time and global states of distributed systems},
+  author={Mattern, Friedemann and others},
+  year={1988},
+  publisher={Citeseer}
+}
+
+###########################
+# Logging
+###########################
+@inproceedings{kim2019border,
+  title={Border-Collie: A Wait-free, Read-optimal Algorithm for Database Logging on Multicore Hardware},
+  author={Kim, Jongbin and Jang, Hyeongwon and Son, Seohui and Han, Hyuck and Kang, Sooyong and Jung, Hyungsoo},
+  booktitle={Proceedings of the 2019 International Conference on Management of Data},
+  pages={723--740},
+  year={2019},
+  organization={ACM}
+}
+
+@article{yao2018scaling,
+  title={Scaling distributed transaction processing and recovery based on dependency logging},
+  author={Yao, Chang and Zhang, Meihui and Lin, Qian and Ooi, Beng Chin and Xu, Jiatao},
+  journal={The VLDB Journal—The International Journal on Very Large Data Bases},
+  volume={27},
+  number={3},
+  pages={347--368},
+  year={2018},
+  publisher={Springer-Verlag}
+}
+@article{arulraj2016write,
+  title={Write-behind logging},
+  author={Arulraj, Joy and Perron, Matthew and Pavlo, Andrew},
+  journal={Proceedings of the VLDB Endowment},
+  volume={10},
+  number={4},
+  pages={337--348},
+  year={2016},
+  publisher={VLDB Endowment}
+}
+@article{wang2014scalable,
+  title={Scalable logging through emerging non-volatile memory},
+  author={Wang, Tianzheng and Johnson, Ryan},
+  journal={Proceedings of the VLDB Endowment},
+  volume={7},
+  number={10},
+  pages={865--876},
+  year={2014},
+  publisher={VLDB Endowment}
+}
+@inproceedings{meng2018twin,
+  title={A Twin-Buffer Scheme for High-Throughput Logging},
+  author={Meng, Qingzhong and Zhou, Xuan and Wang, Shan and Huang, Haiyan and Liu, Xiaoli},
+  booktitle={International Conference on Database Systems for Advanced Applications},
+  pages={725--737},
+  year={2018},
+  organization={Springer}
+}
+@article{huang2014nvram,
+  title={NVRAM-aware logging in transaction systems},
+  author={Huang, Jian and Schwan, Karsten and Qureshi, Moinuddin K},
+  journal={Proceedings of the VLDB Endowment},
+  volume={8},
+  number={4},
+  pages={389--400},
+  year={2014},
+  publisher={VLDB Endowment}
+}
+@inproceedings{speer2007c,
+  title={C-ARIES: A multi-threaded version of the ARIES recovery algorithm},
+  author={Speer, Jayson and Kirchberg, Markus},
+  booktitle={International Conference on Database and Expert Systems Applications},
+  pages={319--328},
+  year={2007},
+  organization={Springer}
+}
+
+@book{mohan1989aries,
+  title={{ARIES/KVL: A Key-Value Locking Method for Concurrency Control of Multiaction Transactions Operating on B-Tree Indexes.}},
+  author={Mohan, C},
+  publisher={VLDB},
+  year={1990}
+}
+
+@article{nakamura2019integration,
+  title={Integration of TicToc Concurrency Control Protocol with Parallel Write Ahead Logging Protocol},
+  author={Nakamura, Yasuhiro and Kawashima, Hideyuki and Tatebe, Osamu},
+  journal={International Journal of Networking and Computing},
+  volume={9},
+  number={2},
+  pages={339--353},
+  year={2019},
+  publisher={IJNC Editorial Committee}
+}
+@article{kim2016nvwal,
+  title={NVWAL: Exploiting NVRAM in write-ahead logging},
+  author={Kim, Wook-Hee and Kim, Jinwoong and Baek, Woongki and Nam, Beomseok and Won, Youjip},
+  journal={ACM SIGOPS Operating Systems Review},
+  volume={50},
+  number={2},
+  pages={385--398},
+  year={2016},
+  publisher={ACM}
+}
+@book{dewitt1984implementation,
+  title={Implementation techniques for main memory database systems},
+  author={DeWitt, David J and Katz, Randy H and Olken, Frank and Shapiro, Leonard D and Stonebraker, Michael R and Wood, David A},
+  volume={14},
+  number={2},
+  year={1984},
+  publisher={ACM}
+}
+@misc{graefe2016controlled,
+  title={Controlled lock violation for data transactions},
+  author={Graefe, Goetz and Kuno, Harumi},
+  year={2016},
+  month=jul # "~19",
+  publisher={Google Patents},
+  note={US Patent 9,396,227}
+}
+@inproceedings{soisalon1995partial,
+  title={Partial strictness in two-phase locking},
+  author={Soisalon-Soininen, Eljas and Yl{\"o}nen, Tatu},
+  booktitle={International Conference on Database Theory},
+  pages={139--147},
+  year={1995},
+  organization={Springer}
+}
+@inproceedings{kimura2012efficient,
+  title={Efficient locking techniques for databases on modern hardware.},
+  author={Kimura, Hideaki and Graefe, Goetz and Kuno, Harumi A},
+  booktitle={ADMS@ VLDB},
+  pages={1--12},
+  year={2012}
+}
+@inproceedings{graefe2013controlled,
+  title={Controlled lock violation},
+  author={Graefe, Goetz and Lillibridge, Mark and Kuno, Harumi and Tucek, Joseph and Veitch, Alistair},
+  booktitle={Proceedings of the 2013 ACM SIGMOD International Conference on Management of Data},
+  pages={85--96},
+  year={2013},
+  organization={ACM}
+}
+@inproceedings{hong2013kuafu,
+  title={KuaFu: Closing the parallelism gap in database replication},
+  author={Hong, Chuntao and Zhou, Dong and Yang, Mao and Kuo, Carbo and Zhang, Lintao and Zhou, Lidong},
+  booktitle={2013 IEEE 29th International Conference on Data Engineering (ICDE)},
+  pages={1186--1195},
+  year={2013},
+  organization={IEEE}
+}
+@inproceedings{kimura2015foedus,
+  title={FOEDUS: OLTP Engine for a Thousand Cores and NVRAM},
+  author={Kimura, Hideaki},
+  booktitle={Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data},
+  pages={691--706},
+  year={2015},
+  organization={ACM}
+}
+@inproceedings{fang2011high,
+  title={High performance database logging using storage class memory},
+  author={Fang, Ru and Hsiao, Hui-I and He, Bin and Mohan, C and Wang, Yun},
+  booktitle={2011 IEEE 27th International Conference on Data Engineering},
+  pages={1221--1231},
+  year={2011},
+  organization={IEEE}
+}
+@article{chatzistergiou2015rewind,
+  title={Rewind: Recovery write-ahead system for in-memory non-volatile data-structures},
+  author={Chatzistergiou, Andreas and Cintra, Marcelo and Viglas, Stratis D},
+  journal={Proceedings of the VLDB Endowment},
+  volume={8},
+  number={5},
+  pages={497--508},
+  year={2015},
+  publisher={VLDB Endowment}
+}
+@inproceedings{arulraj2015let,
+  title={Let's talk about storage \& recovery methods for non-volatile memory database systems},
+  author={Arulraj, Joy and Pavlo, Andrew and Dulloor, Subramanya R},
+  booktitle={Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data},
+  pages={707--722},
+  year={2015},
+  organization={ACM}
+}
+@inproceedings{wu2017fast,
+  title={{Fast Failure Recovery for Main-Memory DBMSs on Multicores}},
+  author={Wu, Yingjun and Guo, Wentian and Chan, Chee-Yong and Tan, Kian-Lee},
+  booktitle={Proceedings of the 2017 ACM International Conference on Management of Data},
+  pages={267--281},
+  year={2017},
+  organization={ACM}
+}
+@inproceedings{yao2016adaptive,
+  title={Adaptive logging: Optimizing logging and recovery costs in distributed in-memory databases},
+  author={Yao, Chang and Agrawal, Divyakant and Chen, Gang and Ooi, Beng Chin and Wu, Sai},
+  booktitle={Proceedings of the 2016 International Conference on Management of Data},
+  pages={1119--1134},
+  year={2016},
+  organization={ACM}
+}
+@article{jung2017scalable,
+  title={Scalable database logging for multicores},
+  author={Jung, Hyungsoo and Han, Hyuck and Kang, Sooyong},
+  journal={Proceedings of the VLDB Endowment},
+  volume={11},
+  number={2},
+  pages={135--148},
+  year={2017},
+  publisher={VLDB Endowment}
+}
+@inproceedings{wang2014using,
+  title={Using restricted transactional memory to build a scalable in-memory database},
+  author={Wang, Zhaoguo and Qian, Hao and Li, Jinyang and Chen, Haibo},
+  booktitle={Proceedings of the Ninth European Conference on Computer Systems},
+  pages={26},
+  year={2014},
+  organization={ACM}
+}
+@article{johnson2010aether,
+  title={Aether: a scalable approach to logging},
+  author={Johnson, Ryan and Pandis, Ippokratis and Stoica, Radu and Athanassoulis, Manos and Ailamaki, Anastasia},
+  journal={Proceedings of the VLDB Endowment},
+  volume={3},
+  number={1-2},
+  pages={681--692},
+  year={2010},
+  publisher={VLDB Endowment}
+}
+@article{mohan1992aries,
+  title={ARIES: a transaction recovery method supporting fine-granularity locking and partial rollbacks using write-ahead logging},
+  author={Mohan, C and Haderle, Don and Lindsay, Bruce and Pirahesh, Hamid and Schwarz, Peter},
+  journal={ACM Transactions on Database Systems (TODS)},
+  volume={17},
+  number={1},
+  pages={94--162},
+  year={1992},
+  publisher={ACM}
+}
+@misc{malviya13,
+    author = {Malviya, Nirmesh and Weisberg, Ariel and Madden, Samuel and Stonebraker, Michael},
+    title = {Recovery Algorithms for In-memory {OLTP} Databases},
+    howpublished = {\textit{In Submission}},
+    year = {2013},
+}
+###########################
+# Benchmarks  
+###########################
+# LinkBench
+@inproceedings{armstrong2013linkbench,
+  title={{LinkBench: a Database Benchmark Based on the Facebook Social Graph}},
+  author={Armstrong, Timothy G and Ponnekanti, Vamsi and Borthakur, Dhruba and Callaghan, Mark},
+  booktitle={SIGMOD},
+  pages={1185--1196},
+  year={2013},
+}
+@inproceedings{viswanath2009evolution,
+  title={{On the Evolution of User Interaction in Facebook}},
+  author={Viswanath, Bimal and Mislove, Alan and Cha, Meeyoung and Gummadi, Krishna P},
+  booktitle={Workshop on Online Social Networks (WOSN)},
+  pages={37--42},
+  year={2009},
+}
+
+# YCSB
+@inproceedings{cooper10,
+    author = {Cooper, Brian F. and Silberstein, Adam and Tam, Erwin and Ramakrishnan, Raghu and Sears, Russell},
+    title = {{Benchmarking Cloud Serving Systems with YCSB}},
+    booktitle = {SoCC},
+    pages = {143--154},
+	year = {2010}
+}
+# TPC-C
+@misc{tpc-c,
+    author = {{The Transaction Processing Council}},
+    title = {{TPC-C} {B}enchmark ({R}evision 5.9.0)},
+    month = {June},
+    year = {2007},
+}
+
+@inproceedings{tpc-analysis,
+  title={From A to E: analyzing TPC's OLTP benchmarks: the obsolete, the ubiquitous, the unexplored},
+  author={T{\"o}z{\"u}n, P{\i}nar and Pandis, Ippokratis and Kaynak, Cansu and Jevdjic, Djordje and Ailamaki, Anastasia},
+  booktitle={Proceedings of the 16th International Conference on Extending Database Technology},
+  pages={17--28},
+  year={2013}
+}
+
+###########################
+# Commercial DBs
+###########################
+# CockroachDB
+@misc{cockroachdb,
+ howpublished = {\url{https://www.cockroachlabs.com}},
+ title={{CockroachDB}}
+}
+
+# HStore
+@misc{hstore,
+    title = {{H}-{S}tore: {A} {N}ext {G}eneration {OLTP} {DBMS}},
+    howpublished = {\url{http://hstore.cs.brown.edu}}
+}
+# Hstore research paper
+@article{kallman08,
+    author = {Robert Kallman and Hideaki Kimura and Jonathan Natkins and Andrew Pavlo and Alexander Rasin and Stanley
+Zdonik and Evan P. C. Jones and Samuel Madden and Michael Stonebraker and Yang Zhang and John Hugg and Daniel J. Abadi},
+    title = {{H-Store: A High-Performance, Distributed Main Memory Transaction Processing System}},
+    journal = {Proc. VLDB Endow.},
+    volume = {1},
+    number = {2},
+    year = {2008},
+    pages = {1496--1499},
+}
+# VoltDB
+@misc{voltdb,
+    title = {{VoltDB}},
+    howpublished = {\url{http://voltdb.com}}
+}
+
+##########################
+# Data Sharing
+##########################
+# a survey 
+@article{rahm1993empirical,
+  title={{Empirical Performance Evaluation of Concurrency and Coherency Control Protocols for Database Sharing Systems}},
+  author={Rahm, Erhard},
+  journal={TODS},
+  pages={333--377},
+  year={1993},
+}
+
+# Microsoft Hyder
+@inproceedings{bernstein2011hyder,
+  title={{Hyder-A Transactional Record Manager for Shared Flash}},
+  author={Bernstein, Philip A and Reid, Colin W and Das, Sudipto},
+  booktitle={CIDR},
+  pages={9--20},
+  year={2011}
+}
+# Oracle RAC 
+@inproceedings{chandrasekaran2003shared,
+  title={{Shared Cache -- the Future of Parallel Databases}},
+  author={Chandrasekaran, Sashikanth and Bamford, Roger},
+  booktitle={ICDE},
+  pages={840--850},
+  year={2003},
+}
+# Oracle Rdb
+@techreport{lomet1992rdb,
+  title={{How the Rdb/VMS Data Sharing System Became Fast}},
+  author={Lomet, David and Anderson, Rick and Rengarajan, T. K. and Spiro, Peter},
+  journal={CRL Technical Report},
+  year={1992}
+}
+# IBM DB2
+@article{josten1997db2,
+  title={{DB2's Use of the Coupling Facility for Data Sharing}},
+  author={Josten, Jeffrey W. and Mohan, C and Narang, Inderpal and Teng, James Z.},
+  journal={IBM Systems Journal},
+  pages={327--351},
+  year={1997},
+}
+
+
+##############################
+# Clinet-Server Cache Coherence
+##############################
+@article{franklin1997,
+  title={{Transactional Client-Server Cache Consistency: Alternatives and Performance}},
+  author={Franklin, Michael J and Carey, Michael J and Livny, Miron},
+  journal={TODS},
+  pages={315--363},
+  year={1997},
+}
+@inproceedings{txcache,
+  title={{Transactional Consistency and Automatic Management in an Application Data Cache}},
+  author={Ports, Dan RK and Clements, Austin T and Zhang, Irene and Madden, Samuel and Liskov, Barbara},
+  booktitle={OSDI},
+  pages={279--292},
+  year={2010},
+}
+
+
+#######################
+# Data Partitioning and Replication
+#######################
+# Schism
+@article{schism,
+ title = {{Schism: a Workload-Driven Approach to Database Replication and Partitioning}},
+ author = {Curino, Carlo and Jones, Evan and Zhang, Yang and Madden, Sam},
+ journal = {VLDB},
+ pages = {48--57},
+ year = {2010},
+}
+# Skew aware partitioning 
+@inproceedings{pavlo12,
+  author = {Pavlo, Andrew and Curino, Carlo and Zdonik, Stanley},
+  title = {{Skew-Aware Automatic Database Partitioning in Shared-Nothing, Parallel {OLTP} Systems}},
+  booktitle = {SIGMOD},
+  year = {2012},
+  pages = {61--72},
+}
+
+#Open-source code
+@misc{dbx1000,
+ howpublished = {\url{https://github.com/yxymit/DBx1000}},
+ title = {{DBx1000}},
+}
+
+
+# Orleans transaction tech report 
+@techreport{orleans-txn,
+  title={{Transactions for Distributed Actors in the Cloud}},
+  author={Eldeeb, Tamer and Bernstein, Phil},
+  journal={MSR-TR-2016-1001},
+  year={2016}
+}
+@inproceedings{speculative-distributed,
+author = {Jones, Evan P.C. and Abadi, Daniel J. and Madden, Samuel},
+title = {Low Overhead Concurrency Control for Partitioned Main Memory Databases},
+year = {2010},
+booktitle = {SIGMOD},
+pages = {603–614},
+}
+@inproceedings{opt-distributed,
+author = {Gupta, Ramesh and Haritsa, Jayant and Ramamritham, Krithi},
+title = {Revisiting Commit Processing in Distributed Database Systems},
+year = {1997},
+booktitle = {SIGMOD},
+pages = {486–497},
+}
+
+@inproceedings{faleiro2014lazyeval,
+author = {Faleiro, Jose M. and Thomson, Alexander and Abadi, Daniel J.},
+title = {Lazy Evaluation of Transactions in Database Systems},
+year = {2014},
+booktitle = {SIGMOD},
+pages = {15–26},
+}
+@book{dataflow-book,
+author = {Nielson, Flemming and Nielson, Hanne R. and Hankin, Chris},
+title = {Principles of Program Analysis},
+year = {2010},
+publisher = {Springer Publishing Company, Incorporated}
+}
+@article{reach-def,
+  title={Properties of data flow frameworks},
+  author={Marlowe, Thomas J and Ryder, Barbara G},
+  journal={Acta Informatica},
+  pages={121--163},
+  year={1990},
+  publisher={Springer}
+}
+@inproceedings{homeostasis,
+author = {Roy, Sudip and Kot, Lucja and Bender, Gabriel and Ding, Bailu and Hojjat, Hossein and Koch, Christoph and Foster, Nate and Gehrke, Johannes},
+title = {The Homeostasis Protocol: Avoiding Transaction Coordination Through Program Analysis},
+year = {2015},
+booktitle = {SIGMOD},
+pages = {1311–1326},
+}
+@inproceedings{swarm1,
+author = {Jeffrey, Mark C. and Subramanian, Suvinay and Yan, Cong and Emer, Joel and Sanchez, Daniel},
+title = {A Scalable Architecture for Ordered Parallelism},
+year = {2015},
+booktitle = {MICRO},
+pages = {228–241},
+}
+
+@article{swarm2,
+author={M. C. {Jeffrey} and S. {Subramanian} and C. {Yan} and J. {Emer} and D. {Sanchez}},
+journal={IEEE Micro},
+title={Unlocking Ordered Parallelism with the Swarm Architecture},
+year={2016},
+pages={105-117},
+}
+
+@misc{s3select,
+    author={Hunt, Randall},
+    title={{S3 Select and Glacier Select – Retrieving Subsets of Objects}},
+    howpublished={\url{https://aws.amazon.com/blogs/aws/s3-glacier-select/}},
+    year= {2018}
+}
+
+@inproceedings{pushdowndb,
+  title={PushdownDB: Accelerating a DBMS using S3 Computation},
+  author={Yu, Xiangyao and Youill, Matt and Woicik, Matthew and Ghanem, Abdurrahman and Serafini, Marco and Aboulnaga, Ashraf and Stonebraker, Michael},
+  booktitle={2020 IEEE 36th International Conference on Data Engineering (ICDE)},
+  pages={1802--1805},
+  year={2020},
+  organization={IEEE}
+}
+
+@inproceedings{fpdb,
+  title={FlexPushdownDB: Hybrid Pushdown and Caching in a CloudDBMS},
+  author={Yang, Yifei and Youill, Matt and Woicik, Matthew and Liu, Yizhou and Yu, Xiangyao and Serafini, Marco and Aboulnaga, Ashraf and Stonebraker, Michael},
+  booktitle={VLDB},
+  year={2021}
+}
+
+@inproceedings{socrates,
+  title={Socrates: The new sql server in the cloud},
+  author={Antonopoulos, Panagiotis and Budovski, Alex and Diaconu, Cristian and Hernandez Saenz, Alejandro and Hu, Jack and Kodavalla, Hanuma and Kossmann, Donald and Lingam, Sandeep and Minhas, Umar Farooq and Prakash, Naveen and others},
+  booktitle={Proceedings of the 2019 International Conference on Management of Data},
+  pages={1743--1756},
+  year={2019}
+}
+
+@inproceedings{zhou2021foundationdb,
+  title={Foundationdb: A distributed unbundled transactional key value store},
+  author={Zhou, Jingyu and Xu, Meng and Shraer, Alexander and Namasivayam, Bala and Miller, Alex and Tschannen, Evan and Atherton, Steve and Beamon, Andrew J and Sears, Rusty and Leach, John and others},
+  booktitle={Proceedings of the 2021 International Conference on Management of Data},
+  pages={2653--2666},
+  year={2021}
+}
+
+@inproceedings{qadah2020q,
+  title={Q-Store: Distributed, Multi-partition Transactions via Queue-oriented Execution and Communication.},
+  author={Qadah, Thamir and Gupta, Suyash and Sadoghi, Mohammad},
+  booktitle={EDBT},
+  pages={73--84},
+  year={2020}
+}
+
+@article{lu2020aria,
+  title={Aria: a fast and practical deterministic OLTP database},
+  author={Lu, Yi and Yu, Xiangyao and Cao, Lei and Madden, Samuel},
+  year={2020},
+  publisher={VLDB Endowment}
+}
+
+@article{thomson2010case,
+  title={The case for determinism in database systems},
+  author={Thomson, Alexander and Abadi, Daniel J},
+  journal={Proceedings of the VLDB Endowment},
+  volume={3},
+  number={1-2},
+  pages={70--80},
+  year={2010},
+  publisher={VLDB Endowment}
+}
