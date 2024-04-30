@@ -186,8 +186,11 @@ the call is made, and as the applications read columns at non-seqential
 locations in the files, prefetching is of little or no benefit.
 
 
-\section{Strategies for improving performance}
-\subsection{Prefetching}
+\section{Strategies for improving performance}\label{sec:strategies-for-improving-performance}
+
+What options are there for speeding up file read performance?
+
+\subsection{Prefetching}\label{subsec:prefetching}
 
 The Azure ABFS connector has a small pool of prefetching threads
 which will fetch blocks from open input streams ahead of
@@ -236,7 +239,7 @@ PInterest stream once this is done, we have confidence in the code
 and selected a fetch/cache strategy for our own work which is suitable
 for most workloads.
 
-\subsection{Footer Caching}
+\subsection{Footer Caching}\label{subsec:footer-caching}
 
 Parquet and ORC files have variable length footers the end of the file which contain
 information about the file.
@@ -262,7 +265,7 @@ information about the file.
     4-byte magic number "PAR1" or "PARE"
 \end{verbatim}
 
-For Parquet, the metadata is summarized in \ref{sec:parquet-metadata}.
+For Parquet, the metadata is summarized in~\ref{sec:parquet-metadata}.
 The mey part of the metadata includes not just the schema of
 the columns, but the details about where each column's data is stored
 in the file.
@@ -289,7 +292,10 @@ The ABFS connector added` this feature in 2024;
 again we do not have any statistics on the speedups it provides.
 
 
-\subsection{Parallel fetching of column stripes}
+\subsection{Parallel fetching of column stripes}\label{subsec:parallel-fetching-of-column-stripes}
+
+This is the solution we implemented and which this paper describes.
+
 
 
 % ========================================================================
@@ -513,8 +519,91 @@ needed while avoiding the need to discard data between ranges.
 
 \section{Related Work}\label{sec:related-work}
 
-\section{Conclusions and Further Work}
-\label{sec:conclusions}
+\section{Conclusions and Further Work}\label{sec:conclusions-and-further-work}
+
+Our results show that adding support for vectored reads into the API used to
+access cloud-store-hosted data, can deliver significant performance
+on queries which read large quantities of Parquet and ORC data.
+
+As these formats, Parquet in particular, are the foundational formats in cloud-hosted
+data lakes\footnote{We are ignoring CSV files. Please, stop it.},
+this means that this should reduce the query time of many queries
+made of this data.
+
+If there is a penalty for this, it is that it is somewhat more
+complicated to use ---a problem exacerbated by the need to use
+Java Reflection in the public implementation.
+
+Fortunately, only two libraries need to be upgraded to support this,
+the Java implementations of Parquet and ORC\@.
+All applications have to do is
+\begin{itemize}
+    \item Use a version of the library with the feature
+    \item Run the application with a version of Hadoop client with the feature
+    \item Enable vector reads for the library.
+\end{itemize}
+That's all.
+
+Where next?
+
+Most pressing is adding the same support to Azure ADLS Gen 2 client, the
+``abfs connector''\ \cite{HADOOP-18884}.
+This will permit us to benchmark performance against a
+input stream with optional block prefetching,
+which is needed for a broader comparison.
+
+For Parquet, we have some immediate improvements we wish
+to do, to pick up existing performance enhancements
+which again, a desire to support older Hadoop releases
+requires their use to be through Java Reflection.
+There is ongoing work to aid this\ \cite{HADOOP-19131},
+after which Parquet will be able to pass down the
+file length when opening a file -removing a HEAD request
+on every operation.
+While seemingly marginal, for small files this can be a factor.
+
+More ambitious would be for the parquet to be provided with the footer offset
+within the file --eliminating the need for the initial 8 byte read.
+This becomes possible with the move to manifest-based table indices;
+if these manifests declared file length and footer position then we
+could use that when opening files -at which point multiple HEAD and GET
+requests can be eliminated.
+
+One outstanding research topic would be to explore how the Parquet/ORC
+libraries and the query engines using them could take advantage of
+the fact the results are now potentially returned out of order.
+
+Currently the calling thread will block until all the results of all ranges have
+been retrieved, at which point processing the results begin.
+This is a straightforward strategy, leads to simple code, and is effective
+if the time spent waiting for data is neglible.
+When running Hive or Spark queries against data stored on the same host as
+the code itself is running, these times are (probably) neglible.
+When the application is working with data in cloud storage, however,
+this no longer holds.
+Given the ranges are being returned in the order the GET requests complete,
+it may be possible for the Parquet library to perform the next stage
+of the data processing, pruning based on pushed-down predicates, while
+subsequent data arrives.
+As such, there \emph{may} be performance improvements from asynchronous
+result processing.
+The Vector IO API was designed to support this.
+Asynchronous processing of cloud-based data retrieved through vector IO does not, however, guarantee
+speedups.
+Why not?
+Because the data is being received as TLS-encrypted HTTP responses,
+which requires CPU time to process, it is not clear that the
+cores ``executing'' the query are idle; instead they may be
+busy reading in the data, decrypting it and saving to the final
+output buffers.
+If so, reworking a library for asynchronous range processing may
+be a major undertaking for little or no benefit.
+
+And yet: the API is not exclusively for cloud storage; native file
+reading permits DMA copying of data from HDD or SSD storage
+directly into the target buffers, while changes in
+server design keep IO processing an area of
+competitive innovation~\cite{10.1145/3620665.3640401}.
 
 
 
@@ -736,7 +825,7 @@ Hopefully others can learn from our mistakes.
 
 
 \subsection{HADOOP-19101. Vectored Read into off-heap buffer broken in fallback implementation}
-\label{HADOOP-19101}
+\label{subsec:hadoop-19101}
 
 Default implementation reads into Direct (off JVM-heap buffer reads broken.
 This surfaced when adding tests for azure storage.

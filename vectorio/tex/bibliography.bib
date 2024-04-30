@@ -200,8 +200,14 @@
     Title = {{HADOOP-18521. ABFS ReadBufferManager buffer sharing across concurrent HTTP requests}},
     Url = {https://issues.apache.org/jira/browse/HADOOP-18521},
     Urldate = {2022-11-05},
-    Year = {2022} }
-
+    Year = {2022}
+    }
+@url{HADOOP-18884,
+   % Author = {Loughran, Steve},
+    Title = {{HADOOP-18884. [ABFS] Support VectorIO in ABFS Input Stream-}},
+    Url = {https://issues.apache.org/jira/browse/HADOOP-18884},
+    Year = {2023}
+    }
 @url{HADOOP-19102,
     Author = {},
     Title = {{HADOOP-19102. [ABFS] FooterReadBufferSize should not be greater than readBufferSize}},
@@ -211,13 +217,18 @@
     }
 
 @url{HADOOP-18971,
-    Author = {e},
+    Author = {},
     Title = {{HADOOP-18971. [ABFS] Read and cache file footer with fs.azure.footer.read.request.size }},
     Url = {https://issues.apache.org/jira/browse/HADOOP-18971},
     Urldate = {},
     Year = {}
     }
-
+@url{HADOOP-19131,
+    %Author = {Loughran, Steve},
+    Title = {{HADOOP-19131. Assist reflection IO with WrappedOperations class}},
+    Url = {https://issues.apache.org/jira/browse/HADOOP-19131},
+    Year = {2024}
+    }
 @url{SPARK-33739,
     Author = {Loughran, Steve},
     Title = {{SPARK-33739. Jobs committed through the S3A Magic committer don't report the bytes written}},
@@ -246,7 +257,7 @@
   Url = {https://iceberg.apache.org/},
   Year = {2018} }
 
-@url{iceberg,
+@url{iceberg2018,
   Author = {Ryan Blue},
   Title = {{ Iceberg: a fast table format for S3 }},
   Url = {https://www.slideshare.net/Hadoop_Summit/iceberg-a-fast-table-format-for-s3-103201179},
@@ -530,4 +541,20 @@ author	= {Sergey Melnik and Andrey Gubarev and Jing Jing Long and Geoffrey Romer
    isbn = {978-981-99-4553-5},
    doi = {10.1007/978-981-99-4554-2_19}
    }
-
+@inproceedings{10.1145/3620665.3640401,
+author = {Kuper, Reese and Jeong, Ipoom and Yuan, Yifan and Wang, Ren and Ranganathan, Narayan and Rao, Nikhil and Hu, Jiayu and Kumar, Sanjay and Lantz, Philip and Kim, Nam Sung},
+title = {A Quantitative Analysis and Guidelines of Data Streaming Accelerator in Modern Intel Xeon Scalable Processors},
+year = {2024},
+isbn = {9798400703850},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3620665.3640401},
+doi = {10.1145/3620665.3640401},
+abstract = {As semiconductor power density is no longer constant with the technology process scaling down, we need different solutions if we are to continue scaling application performance. To this end, modern CPUs are integrating capable data accelerators on the chip, aiming to improve performance and efficiency for a wide range of applications and usages. One such accelerator is the Intel® Data Streaming Accelerator (DSA) introduced since Intel® 4th Generation Xeon® Scalable CPUs (Sapphire Rapids). DSA targets data movement operations in memory that are common sources of overhead in datacenter workloads and infrastructure. In addition, it supports a wider range of operations on streaming data, such as CRC32 calculations, computation of deltas between data buffers, and data integrity field (DIF) operations. This paper aims to introduce the latest features supported by DSA, dive deep into its versatility, and analyze its throughput benefits through a comprehensive evaluation with both microbenchmarks and real use cases. Along with the analysis of its characteristics and the rich software ecosystem of DSA, we summarize several insights and guidelines for the programmer to make the most out of DSA, and use an in-depth case study of DPDK Vhost to demonstrate how these guidelines benefit a real application.},
+booktitle = {Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2},
+pages = {37–54},
+numpages = {18},
+keywords = {data streaming accelerator (DSA), accelerator, measurement},
+location = {<conf-loc>, <city>La Jolla</city>, <state>CA</state>, <country>USA</country>, </conf-loc>},
+series = {ASPLOS '24}
+}
