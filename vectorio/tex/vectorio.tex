@@ -69,7 +69,7 @@ Or key findings are that
   \item Using the API in the ORC and Parquet is sufficient to enable
         speedups in applications using the libraries \emph{without} any
         changes in the application code.
-  \item The API shows that "cloud first" APIs provide tangible speedups
+  \item The API shows that ``cloud first'' APIs provide tangible speedups
         against the classic Posix API. Many more opportunities exist to
         provide and exploit such APIs.
 \end{itemize}
@@ -85,6 +85,79 @@ Or key findings are that
 \section{Introduction}
 \label{sec:introduction}
 
+The majority of structured data stored in cloud datalakes is in one of two formats: Apache Parquet or Apache ORC --- with the former being dominant.
+Both of these are PAX-style columnar formats, storing stripes columns with compression algorithms and summary information; the latter aids filtering data through predicate pushdown from the query engine.
+
+At the tail of each file, footer information defines the schema of the contents, the location in the file of each stripe, and more.
+
+These formats and many of the query engines evolved alongside the Hadoop HDFS FileSystem.
+Apache Hive, Impala, Spark and Presto/Trino are key examples.
+An outlier here is snowflake, which is cloud only and has a storage subsystem to match.
+
+Other than for snowflake, the query engines design reflects the combined storage and computer
+model of hadoop clusters: computation is pushed to the work notes containing replicated copies of
+the data.
+As well as addressing network limitations, running queries on the same hosts can
+eliminate latency overheads.
+Indeed, HDFS's use of Unix Domain Sockets permits data to be directly loaded into the address
+space of the query engine process, avoiding cross process RPC~\cite{hdfs-short-circuit-local-reads}.
+
+As a result, while latency of reading of hard disks was measurable, it did not necessarily dominate query processing.
+
+However, in the 20 years since Google GFS and Hadoop HDFS storage has changed radically.
+
+Hard Disk Drives (HDDs) now coexist with Solid State ``drives'' (SSDs)
+While HDDs have scaled in capacity per drive and the total storage capacity of a single server,
+SSDs are where high priority data is kept.
+SSDs are generally accessed via the NVM Express (NVMe) protocol over PCI Express (PCIe) peripheral bus, which
+combines high bandwidth with low latency, and the ability to use Direct Memory Access (DMA) to directly copy
+data from SSD into the application memory space~\cite{app13020960}.
+
+At the same time, compute and storage is now often disaggregated, especially with deployments
+in cloud infrastructure, where the cloud vendor's storage products are the only way to
+persist data beyond the lifespan of a Virtual Machine.
+Each vendor generally provides different forms of storage with different pricing models and IO allocation,
+the latter measured in IOPs.
+
+As an example, Amazon provides block storage in its ``Elastic Block Storage'' service as the foundation
+for persistent storage on EC2 VM instances; these must be mounted and paid for in allocated storage and
+IO capacity.
+
+Their other data cloud store is ``Amazon S3''; which can store billions of files, each of a size
+from zero bytes to five terabytes.
+
+This is primarly offered in ``Standard S3'', which stores data
+on hard disks and serves it over HTTPS\@.
+Data is stored in ``buckets''; each bucket must have a
+unique name across all of AWS S3. Within a single bucket, the data is stored in one or more
+``partitions'', each of which has a read capacity of 5000 reads/second and 3500 writes/second per
+partition, where the specifics of ``what is a partition?'' is somehow determined by the amount of
+data stored and the IO load on it.
+
+In November 2023 Amazon launched ``S3 Express One Zone Storage''\ \cite{2023-s3express}.
+This is a high-performance version of S3 which is deployed within a specific ``Availability Zone
+'' of an AWS Region, with significantly higher IO rate limits and lower latencies --albeit at a
+premium price.
+We presume that SSDs are used for the storage substrate, irrespective of other changes.
+
+While local SSD storage significantly reduces the latency and increases the bandwidth of data
+reads, Cloud Storage move the numbers in the other direction.
+
+Latency can be observably high,  while the effective bandwidth for reading small amounts of data is very low.
+The stores like large requests of data\ \cite{aws:s3-performance}.
+
+
+
+As for those ORC and Parquet data formats, the data stored within them reflected the applications of the time.
+Click logs of websites, web advertising data responses, and other web server generated Data sets dominated.
+Processing wasn't very much some form of batch jobs.
+
+The emergence of Internet of things (IoT) hardware and applications has gradually placed more emphasis in capturing data from external devices, and processing it in streaming systems such as: Apache Flink and Spark Streaming, where time bounded results is important: it must take less than an hour to process an hours worth of data else the system will fall behind.
+
+The ubiquity of ``notebooks'' as a form of interactive querying of the data has again placed pressure on performance.
+
+Meanwhile, the continued growth in machine learning and artificial intelligence applications has changed the data collected, processed, and generated. Sparse arrays of 16 bit floating point numbers are no longer unusual,
+nor are large binary objects, BLOBs, as rare a column type as they used to be.
 
 
 \subsection{Terminology}\label{subsec:terminology}
@@ -92,7 +165,10 @@ Or key findings are that
 First, some terminology needs to be introduced to describe
 the protocols.
 
+TODO
+
 % ========================================================================
+
 
 \section{The Challenge of Object Stores}
 \label{sec:object-stores}
@@ -628,11 +704,7 @@ As much of that work was contributed by Mukund and Steve, we are grateful.
 % Bibliography. Include
 
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{bibliography}
-\bibliography{../citations/main}
-\bibliography{../citations/format}
-\bibliography{../citations/db}
-
+\bibliography{bibliography,../citations/main,../citations/format,../citations/db}
 
 
 \appendix{}
