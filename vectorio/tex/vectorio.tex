@@ -56,7 +56,7 @@ This paper describes the design and implementation of this feature,
 and the integration with Apache ORC and Parquet, and
 presents results from TPC-DS benchmarks.
 
-Or key findings are that
+Our key findings are that
 \begin{itemize}
   \item An asynchronous scatter/gather IO API is ideally suited to retrieval
   of ``stripes''/``row groups'' of data stored in columnar data formats.
@@ -155,12 +155,12 @@ The set of operations offered are normally an extended set of HTTP verbs:
 
 The design of the vector IO API had some core requirements:
 \begin{itemize}
-  \item Support scatter/gather IO through local filesystem through the java NIO API.
-  \item Local reads to support with CRC validation of data read.
+  \item Support scatter/gather IO for local filesystem through the java NIO API.
+  \item Local reads to support CRC validation of data read if checksum enabled.
   \item Efficient support against cloud stores where parallel GET requests are required.
   \item Support scatter/gather IO through HDFS and other distributed filesystems
-        where the POSIX API and Hadoop PositionedReadable interface are available
-  \item Optimize for reading columnar data formats such as ORC and Parquet
+        where the POSIX API and Hadoop PositionedReadable interface are available.
+  \item Optimize for reading columnar data formats such as ORC and Parquet.
   \item Be easy to integrate with the ORC and Parquet libraries, in the open
         source releases, as well as our own internal branches.
   \item Permit out-of-order result processing, even while the current format libraries
@@ -219,13 +219,45 @@ the full workflow.
 It was our belief that integration with the ORC and Parquet libraries was
 sufficient to deliver tangible speedups
 \subsection{ORC}
-\subsection{Parquet}
+Apache ORC 2.0.0 implements the vector IO API while reading the multiple disk ranges.
+We have been shipping this in our internal releases at Cloudera for some time and will
+discuss the performance improvements in the results section.
 
+\subsection{Parquet}
+Apache Parquet implements the vector IO API while reading multiple file ranges
+and will be shipping in the upcoming 1.14.0 release.
+We have been shipping this in our internal releases at Cloudera for some time and will
+discuss the performance improvements in the results section.
 
 % ========================================================================
 
 \section{Results}
 \label{sec:results}
+
+\subsection{Hive TPC-DS on ORC with Vector IO}
+TPC-DS Hive queries with ORC data stored in S3 demonstrated a 10–40\% reduction in
+execution time. The data size used was 300 GB in string format. This benchmark was
+done on internal cloudera release.
+\begin{figure}
+  \includegraphics[width=\linewidth]{hive_tpcds_vectored_io.png}
+  \caption{Hive TPC-DS on ORC with Vector IO}
+  \label{fig:hive_tpcds_vectored_io}
+\end{figure}
+
+\subsection{Spark TPC-DS on Parquet with Vector IO}
+TPC-DS Spark queries with Parquet data stored in S3 demonstrated a 10–50\% reduction in
+execution time. The data size used was 1 TB in string format. This benchmark was
+done on internal cloudera release.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{spark_tpcds_vector_io.png}
+  \caption{Spark TPC-DS on Parquet with Vector IO}
+  \label{fig:spark_tpcds_vectored_io}
+\end{figure}
+
+\subsection{Synthetic ETL benchmark}
+%Do we need this here?
+
 
 \subsection{External tests}
 
